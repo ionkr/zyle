@@ -7,6 +7,7 @@ import type {
   ZyleEventHandler,
   ErrorPattern,
   DisplayMode,
+  Locale,
 } from './types';
 import { DEFAULT_OPTIONS } from './types';
 import { ConsoleInterceptor } from './core/console-interceptor';
@@ -17,6 +18,12 @@ import { FloatingButton } from './ui/floating-button';
 import { AnalysisPanel } from './ui/analysis-panel';
 import { AIClient } from './ai/ai-client';
 import { generateId } from './utils/helpers';
+import {
+  initLocale,
+  setLocale as setI18nLocale,
+  getLocale as getI18nLocale,
+  getNetworkTranslations,
+} from './i18n';
 
 /**
  * Zyle the Console Analyzer
@@ -37,6 +44,9 @@ export class Zyle {
 
   constructor(options: ZyleOptions = {}) {
     this.options = { ...DEFAULT_OPTIONS, ...options };
+
+    // i18n 초기화 (다른 모듈보다 먼저)
+    initLocale(this.options.locale);
 
     // 코어 모듈 초기화
     this.consoleInterceptor = new ConsoleInterceptor(this.options.maxLogs);
@@ -230,20 +240,21 @@ export class Zyle {
    * 네트워크 에러 메시지 포맷팅
    */
   private formatNetworkErrorMessage(request: NetworkRequest): string {
+    const translations = getNetworkTranslations();
     const url = new URL(request.url, window.location.origin);
     const shortUrl = url.pathname + url.search;
 
     if (request.requestStatus === 'timeout') {
-      return `[Network Timeout] ${request.method} ${shortUrl}`;
+      return `[${translations.errorMessages.timeout}] ${request.method} ${shortUrl}`;
     }
 
     if (request.error) {
-      const errorName = request.error.name || 'NetworkError';
-      const errorMsg = request.error.message || 'Unknown error';
+      const errorName = request.error.name || translations.errorMessages.networkError;
+      const errorMsg = request.error.message || translations.errorMessages.unknownError;
 
       // DNS 에러, 연결 거부 등의 힌트 추가
       if (errorMsg.includes('Failed to fetch')) {
-        return `[Network Error] ${request.method} ${shortUrl} - 서버에 연결할 수 없습니다 (DNS 실패, 서버 다운, CORS 등)`;
+        return `[${translations.errorMessages.networkError}] ${request.method} ${shortUrl} - ${translations.errorMessages.connectionFailed}`;
       }
 
       return `[${errorName}] ${request.method} ${shortUrl} - ${errorMsg}`;
@@ -251,10 +262,10 @@ export class Zyle {
 
     // HTTP 에러 (4xx, 5xx)
     if (request.status && request.status >= 400) {
-      return `[HTTP ${request.status}] ${request.method} ${shortUrl} - ${request.statusText || 'Error'}`;
+      return `[HTTP ${request.status}] ${request.method} ${shortUrl} - ${request.statusText || translations.errorMessages.error}`;
     }
 
-    return `[Network Error] ${request.method} ${shortUrl}`;
+    return `[${translations.errorMessages.networkError}] ${request.method} ${shortUrl}`;
   }
 
   /**
@@ -391,6 +402,20 @@ export class Zyle {
   }
 
   /**
+   * 언어 설정
+   */
+  setLocale(locale: Locale): void {
+    setI18nLocale(locale);
+  }
+
+  /**
+   * 현재 언어 가져오기
+   */
+  getLocale(): Locale {
+    return getI18nLocale();
+  }
+
+  /**
    * 패널 열기
    */
   openPanel(): void {
@@ -472,6 +497,7 @@ export type {
   StackFrame,
   NetworkRequestStatus,
   DisplayMode,
+  Locale,
 } from './types';
 
 // 전역 인스턴스 생성 (UMD 빌드용)

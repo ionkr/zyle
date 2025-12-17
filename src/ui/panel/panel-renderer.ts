@@ -15,6 +15,7 @@ import {
   dockIcon,
   floatIcon,
 } from '../../icons';
+import { getUITranslations } from '../../i18n';
 
 import * as LogRenderer from '../renderers/log-renderer';
 import * as NetworkRenderer from '../renderers/network-renderer';
@@ -30,6 +31,7 @@ export function renderListView(
   displayMode: DisplayMode
 ): string {
   const filteredLogs = getFilteredLogs(logs, currentTab);
+  const ui = getUITranslations();
 
   return `
     <div class="zyle-panel-header">
@@ -38,13 +40,13 @@ export function renderListView(
         Zyle
       </span>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button class="zyle-mode-toggle" data-action="toggle-mode" title="${displayMode === 'floating' ? 'Dock 모드로 전환' : '플로팅 모드로 전환'}">
+        <button class="zyle-mode-toggle" data-action="toggle-mode" title="${displayMode === 'floating' ? ui.buttons.dockMode : ui.buttons.floatMode}">
           ${displayMode === 'floating' ? dockIcon(18) : floatIcon(18)}
         </button>
-        <button class="zyle-clear-button" data-action="clear" title="모두 삭제">
+        <button class="zyle-clear-button" data-action="clear" title="${ui.buttons.clear}">
           ${deleteIcon(18)}
         </button>
-        <button class="zyle-settings-button" data-action="settings" title="설정">
+        <button class="zyle-settings-button" data-action="settings" title="${ui.buttons.settings}">
           ${settingsIcon(20)}
         </button>
         <button class="zyle-panel-close" data-action="close">
@@ -54,16 +56,16 @@ export function renderListView(
     </div>
     <div class="zyle-panel-tabs">
       <button class="zyle-tab ${currentTab === 'all' ? 'active' : ''}" data-tab="all">
-        All (${logs.length})
+        ${ui.tabs.all} (${logs.length})
       </button>
       <button class="zyle-tab ${currentTab === 'errors' ? 'active' : ''}" data-tab="errors">
-        Errors (${logs.filter((l) => l.level === 'error').length})
+        ${ui.tabs.errors} (${logs.filter((l) => l.level === 'error').length})
       </button>
       <button class="zyle-tab ${currentTab === 'warnings' ? 'active' : ''}" data-tab="warnings">
-        Warnings (${logs.filter((l) => l.level === 'warn').length})
+        ${ui.tabs.warnings} (${logs.filter((l) => l.level === 'warn').length})
       </button>
       <button class="zyle-tab ${currentTab === 'network' ? 'active' : ''}" data-tab="network">
-        Network (${networkRequests.filter((r) => r.requestStatus === 'error' || r.requestStatus === 'timeout').length})
+        ${ui.tabs.network} (${networkRequests.filter((r) => r.requestStatus === 'error' || r.requestStatus === 'timeout').length})
       </button>
     </div>
     <div class="zyle-panel-content scrollbar-thin">
@@ -84,17 +86,19 @@ export function renderDetailView(
   aiError: string | null,
   networkRequests: NetworkRequest[]
 ): string {
+  const ui = getUITranslations();
+
   return `
     <div class="zyle-panel-header">
       <div style="display: flex; align-items: center; gap: 8px; overflow: hidden; flex: 1; min-width: 0;">
-        <button class="zyle-header-back" data-action="back" title="Back to list">
+        <button class="zyle-header-back" data-action="back" title="${ui.buttons.back}">
           ${backIcon(20)}
         </button>
         <span class="zyle-log-level ${log.level}" style="flex-shrink: 0;">${log.level.toUpperCase()}</span>
         <span class="zyle-panel-title" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtmlAttr(log.message)}">${escapeHtml(log.message)}</span>
       </div>
       <div style="display: flex; align-items: center; gap: 4px;">
-        <button class="zyle-ai-button ${aiAnalysisState === 'loading' ? 'loading' : ''}" data-action="ai-analyze" title="AI 분석">
+        <button class="zyle-ai-button ${aiAnalysisState === 'loading' ? 'loading' : ''}" data-action="ai-analyze" title="${ui.buttons.settings}">
           ${getSparkleIcon()}
         </button>
         <button class="zyle-panel-close" data-action="close">
@@ -121,6 +125,8 @@ function renderLogDetail(
   aiAnalysisState: string,
   networkRequests: NetworkRequest[]
 ): string {
+  const ui = getUITranslations();
+
   return `
     <div class="zyle-analysis">
       <div class="zyle-log-item ${log.level}" style="cursor: default;">
@@ -150,7 +156,7 @@ function renderLogDetail(
           <div class="zyle-analysis-section">
             <div class="zyle-analysis-title">
               ${codeIcon(16)}
-              Source Code (${escapeHtml(analysis.codeContext.fileName)}:${analysis.codeContext.lineNumber})
+              ${ui.analysis.sourceCode} (${escapeHtml(analysis.codeContext.fileName)}:${analysis.codeContext.lineNumber})
             </div>
             <div class="zyle-code-preview">
               ${LogRenderer.renderCodePreview(analysis.codeContext.sourcePreview, analysis.codeContext.lineNumber)}
@@ -162,14 +168,14 @@ function renderLogDetail(
           <div class="zyle-analysis-section">
             <div class="zyle-analysis-title">
               ${globeIcon(16)}
-              Related Network Requests
+              ${ui.analysis.relatedNetwork}
             </div>
             ${analysis.relatedNetworkRequests.map((req) => NetworkRenderer.renderNetworkItem(req)).join('')}
           </div>
         ` : ''}
       ` : `
         <div class="zyle-empty" style="padding: 20px;">
-          <p>Analyzing...</p>
+          <p>${ui.analysis.analyzing}</p>
         </div>
       `}
 
@@ -177,7 +183,7 @@ function renderLogDetail(
         <div class="zyle-analysis-section">
           <div class="zyle-analysis-title">
             ${listIcon(16)}
-            Stack Trace
+            ${ui.analysis.stackTrace}
           </div>
           <div class="zyle-code-preview">
             ${log.stackTrace.map((frame) => {

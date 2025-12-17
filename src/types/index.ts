@@ -98,6 +98,11 @@ export interface AnalysisResult {
 export type ButtonPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
 /**
+ * 지원 언어 타입
+ */
+export type Locale = 'ko' | 'en';
+
+/**
  * 라이브러리 설정 옵션
  */
 export interface ZyleOptions {
@@ -123,6 +128,8 @@ export interface ZyleOptions {
   zIndex?: number;
   /** 패널 표시 모드 */
   displayMode?: DisplayMode;
+  /** 언어 설정 ('auto'는 브라우저 언어 자동 감지) */
+  locale?: Locale | 'auto';
 }
 
 /**
@@ -140,6 +147,7 @@ export const DEFAULT_OPTIONS: Required<ZyleOptions> = {
   theme: 'auto',
   zIndex: 999999,
   displayMode: 'floating',
+  locale: 'auto',
 };
 
 /**

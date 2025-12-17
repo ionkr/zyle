@@ -1,0 +1,359 @@
+import type { Translations } from '../types';
+
+/**
+ * English translations (fallback language)
+ */
+export const en: Translations = {
+  ui: {
+    tabs: {
+      all: 'All',
+      errors: 'Errors',
+      warnings: 'Warnings',
+      network: 'Network',
+    },
+    buttons: {
+      clear: 'Clear All',
+      settings: 'Settings',
+      close: 'Close',
+      back: 'Back to list',
+      dockMode: 'Switch to Dock Mode',
+      floatMode: 'Switch to Floating Mode',
+      delete: 'Delete',
+      details: 'Details',
+      showMore: 'Show more',
+      showLess: 'Show less',
+      copy: 'Copy',
+      retry: 'Retry',
+      checkSettings: 'Check Settings',
+      cancel: 'Cancel',
+      save: 'Save',
+    },
+    empty: {
+      noLogs: 'No logs captured yet',
+      noNetwork: 'No failed network requests',
+    },
+    analysis: {
+      analyzing: 'Analyzing...',
+      possibleCauses: 'Possible Causes',
+      suggestions: 'Suggestions',
+      sourceCode: 'Source Code',
+      relatedNetwork: 'Related Network Requests',
+      stackTrace: 'Stack Trace',
+    },
+    severity: {
+      critical: 'Critical',
+      high: 'High',
+      medium: 'Medium',
+      low: 'Low',
+    },
+  },
+  ai: {
+    title: 'AI Analysis',
+    analyzed: 'AI has analyzed the issue',
+    copyForDeveloper: 'Content to share with developer',
+    copyHint: 'Copy and share this with your developer. It will help resolve the issue.',
+    detailedAnalysis: 'Detailed Analysis',
+    possibleCauses: 'Possible Causes',
+    solutions: 'Solutions',
+    codeExample: 'Code Example',
+    loading: {
+      title: 'AI is analyzing',
+      subtitle: 'Please wait a moment.\nFinding the cause and solution.',
+      step1: 'Collecting error info',
+      step2: 'Analyzing cause...',
+      step3: 'Generating solutions',
+    },
+    error: {
+      title: 'AI Analysis Failed',
+      retry: 'Retry',
+      checkSettings: 'Check Settings',
+    },
+    settings: {
+      title: 'AI Analysis Settings',
+      apiKey: 'Anthropic API Key',
+      apiKeyPlaceholder: 'sk-ant-api03-...',
+      apiKeyHint: 'The API key is stored in browser local storage.',
+      apiKeyLink: 'Get API key from Anthropic Console',
+      currentKey: 'Current',
+      deleteKey: 'Delete',
+      model: 'AI Model',
+      modelHint: 'Sonnet is fast and economical, Opus provides the most accurate analysis.',
+    },
+    report: {
+      title: 'Error Report',
+      errorType: 'Error Type',
+      errorMessage: 'Error Message',
+      analysisResult: 'AI Analysis Result',
+      analysisModel: 'Analysis Model',
+      rootCause: 'Root Cause',
+      possibleCauses: 'Possible Causes',
+      solutions: 'Solutions',
+      codeExample: 'Code Example',
+      stackTrace: 'Stack Trace',
+      networkInfo: 'Network Request Info',
+      request: 'Request',
+      url: 'URL',
+      status: 'Status',
+      requestStatus: 'Request Status',
+      requestHeaders: 'Request Headers',
+      responseHeaders: 'Response Headers',
+      requestBody: 'Request Body',
+      responseBody: 'Response Body',
+      error: 'Error',
+      unknown: 'Unknown',
+      none: 'None',
+    },
+  },
+  network: {
+    general: 'General',
+    requestHeaders: 'Request Headers',
+    requestBody: 'Request Body',
+    responseHeaders: 'Response Headers',
+    responseBody: 'Response Body',
+    errorDetails: 'Error Details',
+    url: 'URL',
+    method: 'Method',
+    status: 'Status',
+    duration: 'Duration',
+    time: 'Time',
+    name: 'Name',
+    message: 'Message',
+    timeout: 'Network Timeout',
+    connectionError: 'Cannot connect to server (DNS failure, server down, CORS, etc.)',
+    errorMessages: {
+      timeout: 'Network Timeout',
+      networkError: 'Network Error',
+      unknownError: 'Unknown error',
+      connectionFailed: 'Cannot connect to server (DNS failure, server down, CORS, etc.)',
+      error: 'Error',
+    },
+  },
+  errors: {
+    networkConnection: {
+      possibleCauses: [
+        'DNS lookup failed - domain does not exist or is incorrect',
+        'Server is down or inaccessible',
+        'Firewall or proxy is blocking the connection',
+        'Network connection is disconnected',
+      ],
+      suggestions: [
+        'Verify that the URL domain is correct',
+        'Check if the server is running',
+        'Check your network connection',
+        'Check the Network tab in browser developer tools for details',
+      ],
+    },
+    httpClient: {
+      possibleCauses: [
+        'Authentication token is expired or missing (401)',
+        'Accessed a resource without permission (403)',
+        'Requested resource not found (404)',
+        'Request data format is invalid (400)',
+      ],
+      suggestions: [
+        'Check authentication status and re-login if necessary',
+        'Verify the API endpoint URL is correct',
+        'Check request parameters and body format',
+        'Refer to API documentation to ensure required headers are included',
+      ],
+    },
+    httpServer: {
+      possibleCauses: [
+        'Internal server error occurred (500)',
+        'Server is overloaded (503)',
+        'Gateway timeout occurred (504)',
+        'Server configuration issue',
+      ],
+      suggestions: [
+        'Try again later',
+        'Check server logs',
+        'Contact the backend team',
+        'Verify that the request data is in a format the server can process',
+      ],
+    },
+    networkTimeout: {
+      possibleCauses: [
+        'Server response is too slow',
+        'Network connection is unstable',
+        'Request data is too large',
+        'Server is overloaded',
+      ],
+      suggestions: [
+        'Increase the timeout duration',
+        'Reduce the request data size',
+        'Check your network connection',
+        'Monitor server status',
+      ],
+    },
+    cors: {
+      possibleCauses: [
+        'CORS headers are not configured on the server',
+        'Request is from an unauthorized origin',
+        'Used an unauthorized HTTP method',
+        'Custom headers are blocked by CORS policy',
+      ],
+      suggestions: [
+        'Check server CORS configuration',
+        'Verify Access-Control-Allow-Origin header is properly set',
+        'Consider using a proxy server',
+        'Use a CORS extension in development environment',
+      ],
+    },
+    typeError: {
+      possibleCauses: [
+        'Attempted to access a null or undefined value',
+        'Tried to call a non-existent function',
+        'Variable is not declared',
+        'Async data has not loaded yet',
+      ],
+      suggestions: [
+        'Use optional chaining (?.) for safe access',
+        'Verify variable is properly declared and initialized',
+        'Check API response data structure',
+        'Handle async data loading states',
+      ],
+    },
+    referenceError: {
+      possibleCauses: [
+        'Referenced an undeclared variable',
+        'Attempted to access a variable outside its scope',
+        'Module is not properly imported',
+      ],
+      suggestions: [
+        'Check for typos in variable names',
+        'Verify variable is declared before use',
+        'Check that required modules are imported',
+      ],
+    },
+    syntaxError: {
+      possibleCauses: [
+        'JSON format is invalid',
+        'JavaScript syntax error',
+        'API response is in unexpected format',
+      ],
+      suggestions: [
+        'Verify JSON data format',
+        'Check API response content',
+        'Review code syntax',
+      ],
+    },
+    rangeError: {
+      possibleCauses: [
+        'Infinite recursion occurred',
+        'Array size exceeded allowed range',
+        'Function argument value is out of range',
+      ],
+      suggestions: [
+        'Verify recursive function has termination condition',
+        'Check for infinite loops',
+        'Limit data size',
+      ],
+    },
+    reactError: {
+      possibleCauses: [
+        'Hook usage rules were violated',
+        'Error occurred during component rendering',
+        'Invalid prop type was passed',
+      ],
+      suggestions: [
+        'Only call hooks at the top level of components',
+        'Check useEffect dependency array',
+        'Validate prop types',
+      ],
+    },
+    asyncError: {
+      possibleCauses: [
+        'Promise was rejected but not handled',
+        'Exception occurred in async function',
+        'Error occurred during async operation',
+      ],
+      suggestions: [
+        'Handle async errors with try-catch',
+        'Use .catch() to handle Promise errors',
+        'Implement Error Boundaries',
+      ],
+    },
+    authError: {
+      possibleCauses: [
+        'Authentication token is invalid or expired',
+        'Login is required',
+        'No permission',
+      ],
+      suggestions: [
+        'Check login status',
+        'Refresh authentication token',
+        'Verify user permissions',
+      ],
+    },
+    authzError: {
+      possibleCauses: [
+        'No permission for this resource',
+        'Access to this resource is forbidden',
+      ],
+      suggestions: [
+        'Check user permissions',
+        'Contact administrator',
+      ],
+    },
+    notFoundError: {
+      possibleCauses: [
+        'Requested resource not found',
+        'API endpoint does not exist',
+        'URL is incorrect',
+      ],
+      suggestions: [
+        'Verify the URL is correct',
+        'Check if API endpoint exists',
+        'Review routing configuration',
+      ],
+    },
+    serverError: {
+      possibleCauses: [
+        'Internal server error occurred',
+        'Backend logic has issues',
+      ],
+      suggestions: [
+        'Check server logs',
+        'Contact backend developer',
+        'Verify request data is correct',
+      ],
+    },
+    deprecationWarning: {
+      possibleCauses: [
+        'Using a deprecated API',
+        'Feature will be removed in future versions',
+      ],
+      suggestions: [
+        'Migrate to recommended alternative API',
+        'Check library documentation',
+      ],
+    },
+  },
+  prompt: {
+    systemRole: 'You are a web frontend error analysis expert. Analyze the following console log and respond in JSON format.',
+    logTarget: 'Log to Analyze',
+    level: 'Level',
+    message: 'Message',
+    timestamp: 'Timestamp',
+    additionalArgs: 'Additional Arguments',
+    noArgs: 'No additional arguments',
+    stackTrace: 'Stack Trace',
+    noStackTrace: 'No stack trace',
+    relatedNetwork: 'Related Network Requests',
+    noNetwork: 'No related network requests',
+    codeContext: 'Code Context',
+    noCodeContext: 'No code context',
+    file: 'File',
+    instructions: {
+      title: 'Analysis Instructions',
+      step1: 'Identify the root cause of the error.',
+      step2: 'List all possible causes.',
+      step3: 'Provide specific and actionable solutions.',
+      step4: 'Provide code fix examples if applicable.',
+      step5: 'Evaluate the confidence of the analysis.',
+    },
+    responseFormat: 'Response Format (Must respond in JSON format)',
+    responseNote: 'Important: Do not include numbers (1., 2., etc.) in possibleCauses and suggestions array items. Numbers will be added automatically.',
+    languageInstruction: 'Please respond in English.',
+  },
+};
