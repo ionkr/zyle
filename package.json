@@ -1,0 +1,40 @@
+{
+  "name": "zyle",
+  "version": "0.1.0",
+  "description": "웹 프론트엔드에 임베딩되어 콘솔 로그를 분석하고 원인을 안내하는 라이브러리",
+  "type": "module",
+  "main": "./dist/zyle.umd.js",
+  "module": "./dist/zyle.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/zyle.es.js",
+      "require": "./dist/zyle.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "console",
+    "log",
+    "analyzer",
+    "debug",
+    "sourcemap",
+    "error-tracking"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vite": "^5.4.11",
+    "vite-plugin-dts": "^4.3.0"
+  }
+}
