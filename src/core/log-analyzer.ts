@@ -1,8 +1,9 @@
 import type { LogEntry, NetworkRequest, AnalysisResult, ErrorPattern } from '../types';
 import { SourceMapResolver } from './sourcemap-resolver';
 import { NetworkInterceptor } from './network-interceptor';
-import { DEFAULT_ERROR_PATTERNS, importPatternsFromJSON, exportPatternsToJSON } from './error-patterns';
+import { getDefaultErrorPatterns, importPatternsFromJSON, exportPatternsToJSON } from './error-patterns';
 import { ANALYSIS_CONSTANTS } from '../constants';
+import { onLocaleChange } from '../i18n';
 
 /**
  * 로그 분석 엔진
@@ -12,19 +13,26 @@ export class LogAnalyzer {
   private sourceMapResolver: SourceMapResolver;
   private networkInterceptor: NetworkInterceptor;
   private errorPatterns: ErrorPattern[] = [];
+  private customPatterns: ErrorPattern[] = [];
+  private localeUnsubscribe: (() => void) | null = null;
 
   constructor(sourceMapResolver: SourceMapResolver, networkInterceptor: NetworkInterceptor) {
     this.sourceMapResolver = sourceMapResolver;
     this.networkInterceptor = networkInterceptor;
     this.initErrorPatterns();
+
+    // 언어 변경 시 에러 패턴 업데이트
+    this.localeUnsubscribe = onLocaleChange(() => {
+      this.initErrorPatterns();
+    });
   }
 
   /**
    * 에러 패턴 초기화
    */
   private initErrorPatterns(): void {
-    // 기본 에러 패턴 로드
-    this.errorPatterns = [...DEFAULT_ERROR_PATTERNS];
+    // 기본 에러 패턴 로드 (현재 로케일 기준)
+    this.errorPatterns = [...this.customPatterns, ...getDefaultErrorPatterns()];
   }
 
   /**
@@ -33,7 +41,8 @@ export class LogAnalyzer {
   loadPatternsFromJSON(json: string): void {
     try {
       const patterns = importPatternsFromJSON(json);
-      this.errorPatterns = [...patterns, ...DEFAULT_ERROR_PATTERNS];
+      this.customPatterns = patterns;
+      this.errorPatterns = [...patterns, ...getDefaultErrorPatterns()];
     } catch (error) {
       console.warn('[Zyle] Failed to load error patterns from JSON:', error);
     }
@@ -303,5 +312,15 @@ export class LogAnalyzer {
    */
   resetErrorPatterns(): void {
     this.initErrorPatterns();
+  }
+
+  /**
+   * 리소스 정리
+   */
+  destroy(): void {
+    if (this.localeUnsubscribe) {
+      this.localeUnsubscribe();
+      this.localeUnsubscribe = null;
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { AIClient, AI_MODELS, type AIModel } from '../ai/ai-client';
 import { sparkleIcon } from '../icons';
+import { getAITranslations, getUITranslations } from '../i18n';
 
 /**
  * 반짝이는 별 아이콘 SVG
@@ -64,6 +65,8 @@ export class AISettingsModal {
    * 모달 HTML 렌더링
    */
   private renderModal(): string {
+    const ai = getAITranslations();
+    const ui = getUITranslations();
     const maskedKey = this.aiClient.getMaskedApiKey();
     const hasKey = this.aiClient.hasApiKey();
     const currentModel = this.aiClient.getModel();
@@ -73,17 +76,17 @@ export class AISettingsModal {
         <div class="zyle-modal-header">
           <h3>
             ${getSparkleIcon()}
-            AI 분석 설정
+            ${ai.settings.title}
           </h3>
           <button class="zyle-modal-close" data-action="close">×</button>
         </div>
         <div class="zyle-modal-body">
           <label>
-            <span>Anthropic API Key</span>
+            <span>${ai.settings.apiKey}</span>
             <input
               type="password"
               class="zyle-api-key-input"
-              placeholder="sk-ant-api03-..."
+              placeholder="${ai.settings.apiKeyPlaceholder}"
               autocomplete="off"
             />
           </label>
@@ -91,21 +94,21 @@ export class AISettingsModal {
             hasKey
               ? `
             <div class="zyle-api-key-current">
-              <span>현재: ${maskedKey}</span>
-              <button class="zyle-btn-clear-key" data-action="clear-key">삭제</button>
+              <span>${ai.settings.currentKey}: ${maskedKey}</span>
+              <button class="zyle-btn-clear-key" data-action="clear-key">${ai.settings.deleteKey}</button>
             </div>
           `
               : ''
           }
           <p class="zyle-api-key-hint">
-            API 키는 브라우저 로컬 스토리지에 저장됩니다.<br/>
+            ${ai.settings.apiKeyHint}<br/>
             <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">
-              Anthropic Console에서 API 키 발급받기 →
+              ${ai.settings.apiKeyLink}
             </a>
           </p>
 
           <label style="margin-top: 20px;">
-            <span>AI 모델</span>
+            <span>${ai.settings.model}</span>
             <select class="zyle-model-select">
               ${AI_MODELS.map(
                 (model) => `
@@ -117,12 +120,12 @@ export class AISettingsModal {
             </select>
           </label>
           <p class="zyle-model-hint">
-            Sonnet은 빠르고 경제적, Opus는 가장 정확한 분석을 제공합니다.
+            ${ai.settings.modelHint}
           </p>
         </div>
         <div class="zyle-modal-footer">
-          <button class="zyle-btn-cancel" data-action="cancel">취소</button>
-          <button class="zyle-btn-save" data-action="save" ${hasKey ? '' : 'disabled'}>저장</button>
+          <button class="zyle-btn-cancel" data-action="cancel">${ui.buttons.cancel}</button>
+          <button class="zyle-btn-save" data-action="save" ${hasKey ? '' : 'disabled'}>${ui.buttons.save}</button>
         </div>
       </div>
     `;
