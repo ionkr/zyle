@@ -404,4 +404,29 @@ export class FloatingButton {
     this.theme = theme;
     this.updateStyles();
   }
+
+  /**
+   * 버튼 표시
+   */
+  show(): void {
+    if (this.button) {
+      this.button.style.display = '';
+    }
+  }
+
+  /**
+   * 버튼 숨기기
+   */
+  hide(): void {
+    if (this.button) {
+      this.button.style.display = 'none';
+    }
+  }
+
+  /**
+   * 버튼 표시 여부 확인
+   */
+  isHidden(): boolean {
+    return this.button?.style.display === 'none';
+  }
 }

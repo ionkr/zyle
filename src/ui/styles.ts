@@ -309,6 +309,79 @@ export function getAnalysisPanelStyles(theme: 'light' | 'dark', zIndex: number):
       overflow: hidden;
     }
 
+    /* 페이지 전환 컨테이너 */
+    .zyle-view-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .zyle-view {
+      width: 100%;
+    }
+
+    /* 리스트 뷰 -> 상세 뷰 전환 */
+    .zyle-view.slide-out-left {
+      animation: slideOutLeft 0.25s ease-out forwards;
+    }
+
+    .zyle-view.slide-in-right {
+      animation: slideInRight 0.25s ease-out forwards;
+    }
+
+    /* 상세 뷰 -> 리스트 뷰 전환 */
+    .zyle-view.slide-out-right {
+      animation: slideOutRight 0.25s ease-out forwards;
+    }
+
+    .zyle-view.slide-in-left {
+      animation: slideInLeft 0.25s ease-out forwards;
+    }
+
+    @keyframes slideOutLeft {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+    }
+
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
     .zyle-log-list {
       display: flex;
       flex-direction: column;
@@ -321,7 +394,39 @@ export function getAnalysisPanelStyles(theme: 'light' | 'dark', zIndex: number):
       background: ${themeColors.backgroundSecondary};
       border-left: 4px solid ${themeColors.border};
       cursor: pointer;
-      transition: background 0.15s;
+      transition: background 0.15s, opacity 0.3s, transform 0.3s;
+    }
+
+    /* 로그 아이템 추가 애니메이션 */
+    .zyle-log-item.item-enter {
+      animation: itemEnter 0.3s ease-out forwards;
+    }
+
+    @keyframes itemEnter {
+      from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* 로그 아이템 삭제 애니메이션 */
+    .zyle-log-item.item-exit {
+      animation: itemExit 0.25s ease-out forwards;
+    }
+
+    @keyframes itemExit {
+      from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(20px) scale(0.95);
+      }
     }
 
     .zyle-log-item:hover {

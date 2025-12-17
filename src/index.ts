@@ -123,8 +123,21 @@ export class Zyle {
 
     // 모드 변경 이벤트 연결
     this.analysisPanel.setOnModeChange((mode) => {
+      // Dock 모드에서는 플로팅 버튼 숨김
+      if (mode === 'dock') {
+        this.floatingButton.hide();
+      } else {
+        this.floatingButton.show();
+      }
       this.emit('mode:change', mode);
     });
+
+    // 초기 모드가 dock이면 버튼 숨기고 패널 자동 열기
+    if (this.analysisPanel.getDisplayMode() === 'dock') {
+      this.floatingButton.hide();
+      this.analysisPanel.show({ x: 0, y: 0 });
+      this.emit('panel:open', undefined);
+    }
 
     this.isInitialized = true;
   }

@@ -105,6 +105,9 @@ export class AnalysisPanel {
   private renderDebounceTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly RENDER_DEBOUNCE_MS = 50;
 
+  // 새로 추가된 로그 ID 추적 (애니메이션용)
+  private newLogIds: Set<string> = new Set();
+
   constructor(options: { theme: 'light' | 'dark' | 'auto'; zIndex: number; displayMode?: DisplayMode }) {
     this.theme = options.theme === 'auto' ? getSystemTheme() : options.theme;
     this.zIndex = options.zIndex;
@@ -620,10 +623,7 @@ export class AnalysisPanel {
           break;
 
         case 'back':
-          this.selectedLogId = null;
-          this.aiAnalysisState = 'idle';
-          this.aiError = null;
-          this.renderPanel();
+          this.navigateBack();
           break;
 
         case 'ai-analyze':
@@ -912,9 +912,19 @@ export class AnalysisPanel {
   }
 
   /**
-   * 로그 선택 (O(1) 검색)
+   * 로그 선택 (O(1) 검색) - 트랜지션 적용
    */
   private async selectLog(logId: string): Promise<void> {
+    // 트랜지션 애니메이션 적용
+    const content = this.panel?.querySelector('.zyle-panel-content');
+    if (content) {
+      const currentView = content.querySelector('.zyle-log-list, .zyle-analysis');
+      if (currentView) {
+        currentView.classList.add('zyle-view', 'slide-out-left');
+        await this.waitForAnimation(250);
+      }
+    }
+
     this.selectedLogId = logId;
 
     // 분석 결과가 없으면 분석 실행 (Map으로 O(1) 검색)
@@ -928,6 +938,51 @@ export class AnalysisPanel {
     }
 
     this.renderPanel();
+
+    // 새 뷰에 슬라이드 인 애니메이션 적용
+    const newContent = this.panel?.querySelector('.zyle-panel-content');
+    if (newContent) {
+      const newView = newContent.querySelector('.zyle-analysis');
+      if (newView) {
+        newView.classList.add('zyle-view', 'slide-in-right');
+      }
+    }
+  }
+
+  /**
+   * 뒤로 가기 - 트랜지션 적용
+   */
+  private async navigateBack(): Promise<void> {
+    // 트랜지션 애니메이션 적용
+    const content = this.panel?.querySelector('.zyle-panel-content');
+    if (content) {
+      const currentView = content.querySelector('.zyle-analysis');
+      if (currentView) {
+        currentView.classList.add('zyle-view', 'slide-out-right');
+        await this.waitForAnimation(250);
+      }
+    }
+
+    this.selectedLogId = null;
+    this.aiAnalysisState = 'idle';
+    this.aiError = null;
+    this.renderPanel();
+
+    // 새 뷰에 슬라이드 인 애니메이션 적용
+    const newContent = this.panel?.querySelector('.zyle-panel-content');
+    if (newContent) {
+      const newView = newContent.querySelector('.zyle-log-list');
+      if (newView) {
+        newView.classList.add('zyle-view', 'slide-in-left');
+      }
+    }
+  }
+
+  /**
+   * 애니메이션 대기
+   */
+  private waitForAnimation(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   /**
@@ -1054,6 +1109,7 @@ export class AnalysisPanel {
   addLog(entry: LogEntry): void {
     this.logs.push(entry);
     this.logsById.set(entry.id, entry); // O(1) 검색용 인덱스
+    this.newLogIds.add(entry.id); // 애니메이션용 추적
 
     // 표시 중이면 다시 렌더링 (debounce 적용)
     if (this.isVisible && !this.selectedLogId) {
@@ -1070,8 +1126,25 @@ export class AnalysisPanel {
     }
     this.renderDebounceTimer = setTimeout(() => {
       this.renderPanel();
+      this.applyNewLogAnimations();
       this.renderDebounceTimer = null;
     }, this.RENDER_DEBOUNCE_MS);
+  }
+
+  /**
+   * 새로 추가된 로그에 애니메이션 적용
+   */
+  private applyNewLogAnimations(): void {
+    if (this.newLogIds.size === 0) return;
+
+    this.newLogIds.forEach(logId => {
+      const logElement = this.panel?.querySelector(`[data-log-id="${logId}"]`);
+      if (logElement) {
+        logElement.classList.add('item-enter');
+      }
+    });
+
+    this.newLogIds.clear();
   }
 
   /**
@@ -1113,9 +1186,31 @@ export class AnalysisPanel {
   }
 
   /**
-   * 개별 로그 삭제 (Map 인덱스 동기화)
+   * 개별 로그 삭제 (Map 인덱스 동기화) - 트랜지션 적용
    */
   deleteLog(logId: string): void {
+    const log = this.logsById.get(logId);
+    if (!log) return;
+
+    // 삭제 애니메이션 적용
+    const logElement = this.panel?.querySelector(`[data-log-id="${logId}"]`);
+    if (logElement && this.isVisible) {
+      logElement.classList.add('item-exit');
+
+      // 애니메이션 완료 후 실제 삭제
+      setTimeout(() => {
+        this.removeLogFromState(logId);
+      }, 250);
+    } else {
+      // 패널이 안 보이면 즉시 삭제
+      this.removeLogFromState(logId);
+    }
+  }
+
+  /**
+   * 로그 상태에서 제거 (내부 헬퍼)
+   */
+  private removeLogFromState(logId: string): void {
     const log = this.logsById.get(logId);
     if (log) {
       const index = this.logs.indexOf(log);
