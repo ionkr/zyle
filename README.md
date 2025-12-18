@@ -1,143 +1,182 @@
 # Zyle Console Analyzer
 
-웹 프론트엔드에 임베딩되어 콘솔 로그를 수집하고, 소스맵 및 네트워크 요청과 연결하여 분석 결과를 표시하는 라이브러리입니다.
+[한국어 문서](./docs/README.ko.md)
 
-## 주요 기능
+A zero-dependency library that embeds into web frontends to capture console logs, connect them with source maps and network requests, and display analysis results with AI-powered insights.
 
-- **콘솔 로그 캡처**: `console.log`, `console.error`, `console.warn`, `console.info` 인터셉트
-- **전역 에러 감지**: 전역 에러 및 처리되지 않은 Promise rejection 캡처
-- **네트워크 요청 모니터링**: `fetch` 및 `XMLHttpRequest` 요청 추적
-- **소스맵 지원**: 번들된 코드를 원본 소스 위치로 매핑
-- **에러 분석 및 원인 추론**: 에러 패턴 매칭 및 해결 방안 제시
-- **드래그 가능한 플로팅 버튼**: 우측 하단에 기본 위치, 드래그로 이동 가능
-- **다크모드 지원**: 시스템 설정에 따른 자동 테마 전환
+## Features
 
-## 설치
+- **Console Log Capture**: Intercepts `console.log`, `console.error`, `console.warn`, `console.info`
+- **Global Error Detection**: Captures global errors and unhandled Promise rejections
+- **Network Request Monitoring**: Tracks `fetch` and `XMLHttpRequest` requests
+- **Source Map Support**: Maps bundled code to original source locations
+- **Error Analysis & Root Cause Detection**: Pattern matching with suggested solutions
+- **AI-Powered Analysis**: Claude AI integration for detailed error analysis
+- **Draggable Floating Button**: Default position at bottom-right, drag to reposition
+- **Dark Mode Support**: Automatic theme switching based on system settings
+- **Internationalization (i18n)**: English and Korean support with browser language detection
+
+## Installation
 
 ```bash
 npm install zyle
-# 또는
+# or
 pnpm add zyle
-# 또는
+# or
 yarn add zyle
 ```
 
-## 사용법
+## Usage
 
-### 기본 사용
+### Basic Usage
 
 ```typescript
-import { Zyle } from 'zyle';
+import Zyle from 'zyle';
 
-// 기본 옵션으로 초기화 (자동 시작)
+// Initialize with default options (auto-start)
 const zyle = new Zyle();
 ```
 
-### 옵션 설정
+### Configuration Options
 
 ```typescript
 const zyle = new Zyle({
-  position: 'bottom-right',    // 플로팅 버튼 초기 위치
-  draggable: true,             // 드래그 가능 여부
-  captureConsole: true,        // 콘솔 로그 캡처
-  captureNetwork: true,        // 네트워크 요청 캡처
-  sourceMapSupport: true,      // 소스맵 지원
-  autoInit: true,              // 자동 초기화
-  maxLogs: 100,                // 최대 로그 저장 개수
-  maxNetworkRequests: 50,      // 최대 네트워크 요청 저장 개수
+  position: 'bottom-right',    // Initial floating button position
+  draggable: true,             // Enable drag functionality
+  captureConsole: true,        // Capture console logs
+  captureNetwork: true,        // Capture network requests
+  sourceMapSupport: true,      // Enable source map support
+  autoInit: true,              // Auto-initialize on creation
+  maxLogs: 100,                // Maximum logs to store
+  maxNetworkRequests: 50,      // Maximum network requests to store
   theme: 'auto',               // 'light' | 'dark' | 'auto'
-  zIndex: 999999,              // z-index
+  zIndex: 999999,              // z-index value
+  locale: 'auto',              // 'en' | 'ko' | 'auto' (browser detection)
+  displayMode: 'floating',     // 'floating' | 'docked'
 });
 ```
 
-### 이벤트 리스닝
+### Internationalization (i18n)
+
+Zyle supports multiple languages with automatic browser language detection:
 
 ```typescript
-// 로그 캡처 이벤트
+// Auto-detect browser language (default)
+const zyle = new Zyle();
+
+// Initialize with specific language
+const zyle = new Zyle({ locale: 'en' });
+
+// Change language at runtime
+zyle.setLocale('ko');
+
+// Get current language
+const currentLocale = zyle.getLocale(); // 'ko' | 'en'
+```
+
+**Supported Languages:**
+- English (`en`) - Fallback language
+- Korean (`ko`)
+
+### Event Listening
+
+```typescript
+// Log capture event
 zyle.on('log:captured', (entry) => {
-  console.log('새 로그:', entry);
+  console.log('New log:', entry);
 });
 
-// 네트워크 요청 시작
+// Network request start
 zyle.on('network:start', (request) => {
-  console.log('요청 시작:', request.url);
+  console.log('Request started:', request.url);
 });
 
-// 네트워크 요청 완료
+// Network request complete
 zyle.on('network:end', (request) => {
-  console.log('요청 완료:', request.status);
+  console.log('Request completed:', request.status);
 });
 
-// 분석 완료
+// Analysis complete
 zyle.on('analysis:complete', (result) => {
-  console.log('분석 결과:', result);
+  console.log('Analysis result:', result);
 });
 
-// 패널 열기/닫기
-zyle.on('panel:open', () => console.log('패널 열림'));
-zyle.on('panel:close', () => console.log('패널 닫힘'));
+// Panel open/close
+zyle.on('panel:open', () => console.log('Panel opened'));
+zyle.on('panel:close', () => console.log('Panel closed'));
+
+// Display mode change
+zyle.on('mode:change', (mode) => console.log('Mode changed:', mode));
 ```
 
-### 수동 분석
+### Manual Analysis
 
 ```typescript
-// 모든 에러 분석
+// Analyze all errors
 const errorResults = await zyle.analyzeErrors();
 
-// 모든 로그 분석
+// Analyze all logs
 const allResults = await zyle.analyzeAll();
 
-// 단일 로그 분석
+// Analyze single log
 const logs = zyle.getLogs();
 const result = await zyle.analyze(logs[0]);
 ```
 
-### 커스텀 에러 패턴 추가
+### Custom Error Patterns
 
 ```typescript
 zyle.addErrorPattern({
   pattern: /MyCustomError/i,
   errorType: 'Custom Error',
   possibleCauses: [
-    '커스텀 에러가 발생했습니다',
+    'A custom error occurred',
   ],
   suggestions: [
-    '커스텀 에러 처리를 확인하세요',
+    'Check your custom error handling',
   ],
   severity: 'high',
 });
+
+// Remove error pattern
+zyle.removeErrorPattern('Custom Error');
 ```
 
-### 유틸리티 메서드
+### Utility Methods
 
 ```typescript
-// 로그 가져오기
+// Get logs
 const allLogs = zyle.getLogs();
 const errors = zyle.getErrors();
 const warnings = zyle.getWarnings();
 
-// 네트워크 요청 가져오기
+// Get network requests
 const requests = zyle.getNetworkRequests();
 const failedRequests = zyle.getFailedNetworkRequests();
 
-// 통계 가져오기
+// Get statistics
 const stats = zyle.getStats();
 
-// 초기화
+// Clear all data
 zyle.clear();
 
-// 테마 변경
+// Theme control
 zyle.setTheme('dark');
 
-// 패널 제어
+// Panel control
 zyle.openPanel();
 zyle.closePanel();
 
-// 종료
+// Display mode control
+zyle.setDisplayMode('docked');
+zyle.toggleDisplayMode();
+const mode = zyle.getDisplayMode();
+
+// Destroy instance
 zyle.destroy();
 ```
 
-## UMD 빌드 사용
+## UMD Build Usage
 
 ```html
 <script src="zyle.umd.js"></script>
@@ -149,69 +188,104 @@ zyle.destroy();
 </script>
 ```
 
-## 분석 결과 구조
+## Analysis Result Structure
 
 ```typescript
 interface AnalysisResult {
-  logEntry: LogEntry;           // 원본 로그 엔트리
-  errorType?: string;           // 에러 타입
-  possibleCauses: string[];     // 가능한 원인 목록
-  suggestions: string[];        // 해결 방안 목록
-  relatedNetworkRequests: NetworkRequest[];  // 관련 네트워크 요청
-  severity: 'low' | 'medium' | 'high' | 'critical';  // 심각도
-  codeContext?: {               // 코드 컨텍스트
+  logEntry: LogEntry;           // Original log entry
+  errorType?: string;           // Error type
+  possibleCauses: string[];     // Possible causes list
+  suggestions: string[];        // Suggested solutions list
+  relatedNetworkRequests: NetworkRequest[];  // Related network requests
+  severity: 'low' | 'medium' | 'high' | 'critical';  // Severity level
+  codeContext?: {               // Code context
     fileName: string;
     lineNumber: number;
     columnNumber: number;
-    sourcePreview: string[];    // 소스 코드 미리보기
+    sourcePreview: string[];    // Source code preview
   };
 }
 ```
 
-## 지원되는 에러 패턴
+## Supported Error Patterns
 
-- **Network Error**: 네트워크 연결 오류, CORS 오류
-- **Type Error**: null/undefined 접근, 함수 호출 오류
-- **Reference Error**: 선언되지 않은 변수 참조
-- **Syntax Error**: JSON 파싱 오류, 구문 오류
-- **Range Error**: 무한 재귀, 배열 범위 초과
-- **React Error**: Hook 규칙 위반, 컴포넌트 렌더링 오류
-- **Async Error**: Promise rejection, async 함수 오류
-- **HTTP Errors**: 401, 403, 404, 500 등
+- **Network Error**: Network connection errors, CORS errors
+- **Type Error**: null/undefined access, function call errors
+- **Reference Error**: Undefined variable reference
+- **Syntax Error**: JSON parsing errors, syntax errors
+- **Range Error**: Infinite recursion, array out of bounds
+- **React Error**: Hook rule violations, component rendering errors
+- **Async Error**: Promise rejection, async function errors
+- **HTTP Errors**: 401, 403, 404, 500, etc.
 
-## 개발
+## Project Structure
+
+```
+src/
+├── index.ts              # Main entry point
+├── types/                # TypeScript type definitions
+├── constants.ts          # Configuration constants
+├── core/                 # Core modules
+│   ├── console-interceptor.ts
+│   ├── network-interceptor.ts
+│   ├── sourcemap-resolver.ts
+│   ├── log-analyzer.ts
+│   ├── error-patterns.ts
+│   └── network/          # Network interceptor modules
+├── ui/                   # UI components
+│   ├── floating-button.ts
+│   ├── analysis-panel.ts
+│   ├── ai-settings-modal.ts
+│   ├── panel/            # Panel modules
+│   ├── renderers/        # Content renderers
+│   └── styles/           # CSS-in-JS styles
+├── ai/                   # AI integration
+│   ├── ai-client.ts
+│   └── ai-prompt.ts
+├── i18n/                 # Internationalization
+│   ├── types.ts
+│   ├── i18n-service.ts
+│   ├── index.ts
+│   └── locales/
+│       ├── en.ts         # English translations
+│       └── ko.ts         # Korean translations
+├── icons/                # SVG icons
+└── utils/                # Utility functions
+```
+
+## Development
 
 ```bash
-# 의존성 설치
+# Install dependencies
 pnpm install
 
-# 개발 서버 실행
+# Start development server
 pnpm dev
 
-# 빌드
+# Build
 pnpm build
 
-# 타입 체크
+# Type check
 pnpm typecheck
 ```
 
-## 데모 실행
+## Demo
 
 ```bash
-# 빌드 후 데모 페이지 확인
+# Build and preview demo page
 pnpm build
 pnpm preview
-# 브라우저에서 http://localhost:4173/demo/ 접속
+# Open http://localhost:4173/demo/ in browser
 ```
 
-또는 빌드된 파일을 직접 사용:
+Or use the built files directly:
 
 ```bash
-# demo/index.html을 로컬 서버로 실행
+# Run demo/index.html with local server
 npx serve .
-# 브라우저에서 http://localhost:3000/demo/ 접속
+# Open http://localhost:3000/demo/ in browser
 ```
 
-## 라이선스
+## License
 
 MIT
