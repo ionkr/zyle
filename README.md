@@ -1,4 +1,11 @@
-# Zyle Console Analyzer
+# Zyle
+
+[![npm version](https://img.shields.io/npm/v/zyle.svg)](https://www.npmjs.com/package/zyle)
+[![npm downloads](https://img.shields.io/npm/dm/zyle.svg)](https://www.npmjs.com/package/zyle)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/zyle)](https://bundlephobia.com/package/zyle)
+[![license](https://img.shields.io/npm/l/zyle.svg)](https://github.com/anthropics/zyle/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](https://www.npmjs.com/package/zyle)
 
 [한국어 문서](./docs/README.ko.md)
 
@@ -12,6 +19,8 @@ A zero-dependency library that embeds into web frontends to capture console logs
 - **Source Map Support**: Maps bundled code to original source locations
 - **Error Analysis & Root Cause Detection**: Pattern matching with suggested solutions
 - **AI-Powered Analysis**: Claude AI integration for detailed error analysis
+  - **Anthropic API**: Direct API calls with your API key
+  - **Claude Code Bridge**: Use Claude CLI via local bridge server (supports conversations)
 - **Draggable Floating Button**: Default position at bottom-right, drag to reposition
 - **Dark Mode Support**: Automatic theme switching based on system settings
 - **Internationalization (i18n)**: English and Korean support with browser language detection
@@ -108,6 +117,32 @@ zyle.on('panel:close', () => console.log('Panel closed'));
 // Display mode change
 zyle.on('mode:change', (mode) => console.log('Mode changed:', mode));
 ```
+
+### AI Analysis Providers
+
+Zyle supports two AI providers for log analysis:
+
+#### 1. Anthropic API (Direct)
+
+Use Claude API directly with your API key:
+- Click the settings icon in the analysis panel
+- Select "Anthropic API" as provider
+- Enter your API key (encrypted and stored locally)
+- Choose model: Claude Sonnet 4.5, Haiku 4.5, or Opus 4.5
+
+#### 2. Claude Code Bridge
+
+Use Claude CLI via local bridge server for conversation support:
+
+```bash
+# Start the bridge server
+npx @anthropic-ai/claude-code-bridge --port 19960
+```
+
+- Select "Claude Code Bridge" as provider in settings
+- Supports follow-up questions and conversation history
+- Real-time streaming responses via SSE
+- Requires Claude CLI authentication (`claude login`)
 
 ### Manual Analysis
 
@@ -239,9 +274,11 @@ src/
 │   ├── panel/            # Panel modules
 │   ├── renderers/        # Content renderers
 │   └── styles/           # CSS-in-JS styles
-├── ai/                   # AI integration
+├── ai/                   # AI integration (Anthropic API)
 │   ├── ai-client.ts
 │   └── ai-prompt.ts
+├── bridge/               # Claude Code Bridge integration
+│   └── bridge-client.ts  # Bridge server HTTP/SSE client
 ├── i18n/                 # Internationalization
 │   ├── types.ts
 │   ├── i18n-service.ts
@@ -250,7 +287,16 @@ src/
 │       ├── en.ts         # English translations
 │       └── ko.ts         # Korean translations
 ├── icons/                # SVG icons
+│   ├── action.ts         # Action icons (analyze, copy)
+│   ├── logo.ts           # Zyle logo
+│   ├── status.ts         # Status icons (error, warning)
+│   ├── ui.ts             # UI icons (close, settings)
+│   └── index.ts          # Icon exports
 └── utils/                # Utility functions
+    ├── helpers.ts        # General helpers
+    ├── sanitizer.ts      # XSS defense & filtering
+    ├── crypto.ts         # API key encryption
+    └── markdown-parser.ts # Markdown to HTML parser
 ```
 
 ## Development

@@ -1,4 +1,11 @@
-# Zyle Console Analyzer
+# Zyle
+
+[![npm version](https://img.shields.io/npm/v/zyle.svg)](https://www.npmjs.com/package/zyle)
+[![npm downloads](https://img.shields.io/npm/dm/zyle.svg)](https://www.npmjs.com/package/zyle)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/zyle)](https://bundlephobia.com/package/zyle)
+[![license](https://img.shields.io/npm/l/zyle.svg)](https://github.com/anthropics/zyle/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](https://www.npmjs.com/package/zyle)
 
 [English](../README.md)
 
@@ -12,6 +19,8 @@
 - **소스맵 지원**: 번들된 코드를 원본 소스 위치로 매핑
 - **에러 분석 및 원인 추론**: 에러 패턴 매칭 및 해결 방안 제시
 - **AI 기반 분석**: Claude AI 통합으로 상세한 에러 분석 제공
+  - **Anthropic API**: API 키를 사용한 직접 호출
+  - **Claude Code Bridge**: 로컬 브릿지 서버를 통한 Claude CLI 사용 (대화 기능 지원)
 - **드래그 가능한 플로팅 버튼**: 우측 하단에 기본 위치, 드래그로 이동 가능
 - **다크모드 지원**: 시스템 설정에 따른 자동 테마 전환
 - **다국어 지원(i18n)**: 영어/한국어 지원 및 브라우저 언어 자동 감지
@@ -108,6 +117,32 @@ zyle.on('panel:close', () => console.log('패널 닫힘'));
 // 표시 모드 변경
 zyle.on('mode:change', (mode) => console.log('모드 변경:', mode));
 ```
+
+### AI 분석 프로바이더
+
+Zyle은 로그 분석을 위해 두 가지 AI 프로바이더를 지원합니다:
+
+#### 1. Anthropic API (직접 호출)
+
+API 키로 Claude API를 직접 사용:
+- 분석 패널의 설정 아이콘 클릭
+- "Anthropic API" 프로바이더 선택
+- API 키 입력 (암호화되어 로컬에 저장)
+- 모델 선택: Claude Sonnet 4.5, Haiku 4.5, 또는 Opus 4.5
+
+#### 2. Claude Code Bridge
+
+대화 기능을 지원하는 로컬 브릿지 서버를 통해 Claude CLI 사용:
+
+```bash
+# 브릿지 서버 시작
+npx @anthropic-ai/claude-code-bridge --port 19960
+```
+
+- 설정에서 "Claude Code Bridge" 프로바이더 선택
+- 추가 질문 및 대화 기록 지원
+- SSE를 통한 실시간 스트리밍 응답
+- Claude CLI 인증 필요 (`claude login`)
 
 ### 수동 분석
 
@@ -239,9 +274,11 @@ src/
 │   ├── panel/            # 패널 모듈
 │   ├── renderers/        # 컨텐츠 렌더러
 │   └── styles/           # CSS-in-JS 스타일
-├── ai/                   # AI 통합
+├── ai/                   # AI 통합 (Anthropic API)
 │   ├── ai-client.ts
 │   └── ai-prompt.ts
+├── bridge/               # Claude Code Bridge 통합
+│   └── bridge-client.ts  # 브릿지 서버 HTTP/SSE 클라이언트
 ├── i18n/                 # 다국어 지원
 │   ├── types.ts
 │   ├── i18n-service.ts
@@ -250,7 +287,16 @@ src/
 │       ├── en.ts         # 영어 번역
 │       └── ko.ts         # 한국어 번역
 ├── icons/                # SVG 아이콘
+│   ├── action.ts         # 액션 아이콘 (분석, 복사)
+│   ├── logo.ts           # Zyle 로고
+│   ├── status.ts         # 상태 아이콘 (에러, 경고)
+│   ├── ui.ts             # UI 아이콘 (닫기, 설정)
+│   └── index.ts          # 아이콘 exports
 └── utils/                # 유틸리티 함수
+    ├── helpers.ts        # 일반 헬퍼
+    ├── sanitizer.ts      # XSS 방어 및 필터링
+    ├── crypto.ts         # API 키 암호화
+    └── markdown-parser.ts # 마크다운 to HTML 파서
 ```
 
 ## 개발
