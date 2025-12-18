@@ -6,11 +6,16 @@ import type {
   AIAnalysisState,
   AIAnalysisContext,
   DisplayMode,
+  ConversationState,
+  BridgeStatus,
 } from '../types';
 import { getAnalysisPanelStyles, getSystemTheme } from './styles';
 import { checkIcon } from '../icons';
 import { AIClient } from '../ai/ai-client';
 import { AISettingsModal } from './ai-settings-modal';
+import { getBridgeClient } from '../bridge/bridge-client';
+import { BRIDGE_CONSTANTS } from '../constants';
+import { getAITranslations } from '../i18n';
 
 // 분리된 패널 모듈
 import type { TabType, AnalysisPanelOptions } from './panel/types';
@@ -61,6 +66,11 @@ export class AnalysisPanel {
   private aiAnalysisState: AIAnalysisState = 'idle';
   private aiAnalysisResults: Map<string, AIAnalysisResult> = new Map();
   private aiError: string | null = null;
+
+  // Bridge 관련 상태
+  private bridgeStatus: BridgeStatus | null = null;
+  private conversations: Map<string, ConversationState> = new Map();
+  private bridgePort: number = BRIDGE_CONSTANTS.DEFAULT_PORT;
 
   // 표시 모드
   private displayMode: DisplayMode = 'floating';
@@ -182,6 +192,18 @@ export class AnalysisPanel {
 
       const analysis = this.analysisResults.get(this.selectedLogId);
       const aiResult = this.aiAnalysisResults.get(this.selectedLogId);
+      const provider = this.aiSettingsModal?.getProvider() || 'anthropic-api';
+      const isBridgeMode = provider === 'claude-bridge';
+
+      // Bridge 모드일 때 추가 옵션 전달
+      const bridgeOptions = isBridgeMode
+        ? {
+            isBridgeMode: true,
+            bridgeStatus: this.bridgeStatus,
+            conversation: this.conversations.get(this.selectedLogId) || getBridgeClient({ port: this.bridgePort }).getConversation(),
+            bridgePort: this.bridgePort,
+          }
+        : undefined;
 
       this.panel.innerHTML = renderDetailView(
         log,
@@ -189,7 +211,8 @@ export class AnalysisPanel {
         this.aiAnalysisState,
         aiResult,
         this.aiError,
-        this.networkRequests
+        this.networkRequests,
+        bridgeOptions
       );
     } else {
       this.panel.innerHTML = renderListView(
@@ -281,6 +304,19 @@ export class AnalysisPanel {
 
         case 'toggle-mode':
           this.toggleDisplayMode();
+          break;
+
+        case 'send-followup':
+          this.handleSendFollowUp();
+          break;
+
+        case 'bridge-retry':
+          this.bridgeStatus = null;
+          this.handleAIAnalyze();
+          break;
+
+        case 'copy-command':
+          this.handleCopyCommand(actionElement as HTMLButtonElement);
           break;
       }
 
@@ -816,7 +852,10 @@ export class AnalysisPanel {
   private async handleAIAnalyze(): Promise<void> {
     if (!this.selectedLogId || !this.aiClient) return;
 
-    if (!this.aiClient.hasApiKey()) {
+    const provider = this.aiSettingsModal?.getProvider() || 'anthropic-api';
+
+    // Provider에 따른 설정 확인
+    if (provider === 'anthropic-api' && !this.aiClient.hasApiKey()) {
       this.aiSettingsModal?.show(() => {
         this.handleAIAnalyze();
       });
@@ -844,15 +883,140 @@ export class AnalysisPanel {
         codeContext: analysis?.codeContext,
       };
 
-      const result = await this.aiClient.analyze(context);
-      this.aiAnalysisResults.set(this.selectedLogId, result);
-      this.aiAnalysisState = 'success';
+      let result: AIAnalysisResult;
+
+      if (provider === 'claude-bridge') {
+        // Bridge를 통한 Claude CLI 분석 (스트리밍)
+        result = await this.handleBridgeAnalyze(context);
+      } else {
+        // Anthropic API 직접 호출
+        result = await this.aiClient.analyze(context);
+        this.aiAnalysisResults.set(this.selectedLogId!, result);
+        this.aiAnalysisState = 'success';
+      }
     } catch (error) {
       this.aiAnalysisState = 'error';
       this.aiError = error instanceof Error ? error.message : '알 수 없는 오류가 발생했습니다.';
     }
 
     this.renderPanel();
+  }
+
+  /**
+   * Bridge를 통한 AI 분석
+   */
+  private async handleBridgeAnalyze(context: AIAnalysisContext): Promise<AIAnalysisResult> {
+    const bridgeClient = getBridgeClient({ port: this.bridgePort });
+
+    // 서버 상태 확인
+    this.bridgeStatus = await bridgeClient.getStatus();
+    if (!this.bridgeStatus.available) {
+      this.aiAnalysisState = 'error';
+      this.renderPanel();
+      throw new Error('Bridge server not running');
+    }
+
+    // 인증 상태 확인
+    if (!this.bridgeStatus.authenticated) {
+      this.aiAnalysisState = 'error';
+      this.renderPanel();
+      throw new Error('Claude CLI not authenticated');
+    }
+
+    // 기존 대화 초기화하고 새로 시작
+    bridgeClient.resetConversation();
+
+    // 분석 요청 및 결과 대기
+    const result = await bridgeClient.analyze(context);
+
+    // 대화 상태 저장
+    const conversation = bridgeClient.getConversation();
+    if (conversation && this.selectedLogId) {
+      this.conversations.set(this.selectedLogId, conversation);
+    }
+
+    // 결과 저장 및 상태 업데이트
+    this.aiAnalysisResults.set(this.selectedLogId!, result);
+    this.aiAnalysisState = 'success';
+    this.renderPanel();
+
+    return result;
+  }
+
+  /**
+   * 추가 질문 전송
+   */
+  private async handleSendFollowUp(): Promise<void> {
+    if (!this.selectedLogId) return;
+
+    const input = this.panel?.querySelector('[data-input="followup"]') as HTMLInputElement;
+    if (!input || !input.value.trim()) return;
+
+    const question = input.value.trim();
+    input.value = '';
+
+    const provider = this.aiSettingsModal?.getProvider() || 'anthropic-api';
+
+    // Anthropic API는 추가 질문 미지원
+    if (provider !== 'claude-bridge') {
+      return;
+    }
+
+    const bridgeClient = getBridgeClient({ port: this.bridgePort });
+
+    // 대화가 없으면 무시
+    if (!bridgeClient.getConversation()) {
+      return;
+    }
+
+    this.aiAnalysisState = 'loading';
+    this.renderPanel();
+
+    try {
+      // 추가 질문 전송 및 응답 대기
+      await bridgeClient.askFollowUp(question);
+
+      // 대화 상태 저장
+      const conversation = bridgeClient.getConversation();
+      if (conversation) {
+        this.conversations.set(this.selectedLogId!, conversation);
+      }
+
+      this.aiAnalysisState = 'success';
+      this.renderPanel();
+    } catch (error) {
+      this.aiError = error instanceof Error ? error.message : 'Unknown error';
+      this.aiAnalysisState = 'error';
+      this.renderPanel();
+    }
+  }
+
+  /**
+   * 명령어 복사 처리
+   */
+  private async handleCopyCommand(btn: HTMLButtonElement): Promise<void> {
+    const command = btn.dataset.command || '';
+    const ai = getAITranslations();
+
+    try {
+      await navigator.clipboard.writeText(command);
+      btn.classList.add('copied');
+      const originalText = btn.textContent;
+      btn.textContent = ai.settings.bridge.notRunningGuide.copied;
+
+      setTimeout(() => {
+        btn.classList.remove('copied');
+        btn.textContent = originalText;
+      }, 2000);
+    } catch {
+      // 폴백
+      const textarea = document.createElement('textarea');
+      textarea.value = command;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
   }
 
   // === Public API ===

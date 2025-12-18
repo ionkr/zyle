@@ -161,7 +161,7 @@ export function getAIStyles(themeColors: ThemeColors, theme: 'light' | 'dark'): 
       border: 1px solid ${theme === 'dark' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.2)'};
       border-radius: 12px;
       padding: 16px;
-      margin-bottom: 16px;
+      // margin-bottom: 16px;
     }
 
     .zyle-ai-summary-header {
@@ -466,6 +466,370 @@ export function getAIStyles(themeColors: ThemeColors, theme: 'light' | 'dark'): 
     @keyframes fade-in {
       from { opacity: 0; }
       to { opacity: 1; }
+    }
+
+    /* ============================================
+       Bridge 전용 스타일
+       ============================================ */
+
+    /* Bridge 안내 박스 */
+    .zyle-bridge-notice {
+      background: ${themeColors.backgroundSecondary};
+      border: 1px solid ${themeColors.border};
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .zyle-bridge-notice-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .zyle-bridge-notice-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: ${themeColors.text};
+      margin-bottom: 8px;
+    }
+
+    .zyle-bridge-notice-desc {
+      font-size: 14px;
+      color: ${themeColors.textSecondary};
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .zyle-bridge-notice-label {
+      font-size: 12px;
+      color: ${themeColors.textSecondary};
+      margin-bottom: 8px;
+      text-align: left;
+    }
+
+    .zyle-bridge-command-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: ${theme === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)'};
+      border: 1px solid ${themeColors.border};
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 20px;
+    }
+
+    .zyle-bridge-command-box code {
+      flex: 1;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+      font-size: 12px;
+      color: ${themeColors.text};
+      word-break: break-all;
+      text-align: left;
+    }
+
+    .zyle-copy-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      background: ${themeColors.accent};
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .zyle-copy-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .zyle-copy-btn.copied {
+      background: ${themeColors.success};
+    }
+
+    .zyle-bridge-notice-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .zyle-bridge-notice-actions button {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .zyle-btn-primary {
+      background: ${themeColors.accent};
+      color: white;
+      border: none;
+    }
+
+    .zyle-btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .zyle-btn-secondary {
+      background: transparent;
+      color: ${themeColors.text};
+      border: 1px solid ${themeColors.border};
+    }
+
+    .zyle-btn-secondary:hover {
+      background: ${themeColors.backgroundHover};
+    }
+
+    /* Bridge AI 섹션 */
+    .zyle-bridge-ai-section {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 16px;
+    }
+
+    /* 대화 UI */
+    .zyle-conversation {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      // padding: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .zyle-message {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: message-fade-in 0.3s ease-out;
+    }
+
+    @keyframes message-fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .zyle-message-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: ${themeColors.textSecondary};
+    }
+
+    .zyle-message-icon {
+      font-size: 14px;
+    }
+
+    .zyle-message-label {
+      font-weight: 500;
+    }
+
+    .zyle-message-content {
+      background: ${themeColors.backgroundSecondary};
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: ${themeColors.text};
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .zyle-message.user .zyle-message-content {
+      background: ${theme === 'dark' ? 'rgba(99, 102, 241, 0.15)' : 'rgba(99, 102, 241, 0.1)'};
+      border: 1px solid ${theme === 'dark' ? 'rgba(99, 102, 241, 0.3)' : 'rgba(99, 102, 241, 0.2)'};
+    }
+
+    .zyle-message.streaming .zyle-message-content {
+      border: 1px solid ${themeColors.accent};
+      background: ${theme === 'dark' ? 'rgba(99, 102, 241, 0.08)' : 'rgba(99, 102, 241, 0.05)'};
+    }
+
+    /* 스트리밍 커서 */
+    .zyle-cursor {
+      display: inline-block;
+      animation: zyle-blink 1s step-end infinite;
+      color: ${themeColors.accent};
+      font-weight: 700;
+    }
+
+    @keyframes zyle-blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    /* 추가 질문 입력창 */
+    .zyle-followup-input {
+      display: flex;
+      gap: 8px;
+      // padding: 16px;
+      // border-top: 1px solid ${themeColors.border};
+      background: ${themeColors.background};
+      margin-bottom: 16px;
+    }
+
+    .zyle-followup-text {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 14px;
+      border: 1px solid ${themeColors.border};
+      border-radius: 24px;
+      background: ${themeColors.backgroundSecondary};
+      color: ${themeColors.text};
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .zyle-followup-text:focus {
+      border-color: ${themeColors.accent};
+    }
+
+    .zyle-followup-text::placeholder {
+      color: ${themeColors.textSecondary};
+    }
+
+    .zyle-followup-text:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .zyle-followup-send {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      background: ${themeColors.accent};
+      color: white;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .zyle-followup-send:hover:not(:disabled) {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .zyle-followup-send:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* ============================================
+       마크다운 콘텐츠 스타일
+       ============================================ */
+
+    /* 마크다운 콘텐츠 컨테이너 */
+    .zyle-md-content {
+      white-space: normal;
+    }
+
+    /* 헤더 */
+    .zyle-md-header {
+      margin: 16px 0 8px 0;
+      font-weight: 600;
+      color: ${themeColors.text};
+      line-height: 1.3;
+    }
+
+    .zyle-md-header:first-child {
+      margin-top: 0;
+    }
+
+    .zyle-md-h1 { font-size: 1.5em; }
+    .zyle-md-h2 { font-size: 1.3em; }
+    .zyle-md-h3 { font-size: 1.15em; }
+    .zyle-md-h4 { font-size: 1.05em; }
+    .zyle-md-h5 { font-size: 1em; }
+    .zyle-md-h6 { font-size: 0.95em; color: ${themeColors.textSecondary}; }
+
+    /* 인라인 코드 */
+    .zyle-md-inline-code {
+      background: ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+      font-size: 0.9em;
+      color: ${theme === 'dark' ? '#e879f9' : '#9333ea'};
+    }
+
+    /* 코드 블록 */
+    .zyle-md-code-block {
+      background: ${theme === 'dark' ? '#1e1e2e' : '#f8f9fa'};
+      border: 1px solid ${themeColors.border};
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      overflow-x: auto;
+    }
+
+    .zyle-md-code-block code {
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      color: ${themeColors.text};
+      white-space: pre;
+    }
+
+    /* 볼드/이탤릭 */
+    .zyle-md-bold {
+      font-weight: 600;
+    }
+
+    .zyle-md-italic {
+      font-style: italic;
+    }
+
+    /* 링크 */
+    .zyle-md-link {
+      color: ${themeColors.accent};
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    .zyle-md-link:hover {
+      border-bottom-color: ${themeColors.accent};
+    }
+
+    /* 리스트 */
+    .zyle-md-list {
+      margin: 12px 0;
+      padding-left: 24px;
+    }
+
+    .zyle-md-list.zyle-md-ordered {
+      list-style-type: decimal;
+    }
+
+    .zyle-md-list:not(.zyle-md-ordered) {
+      list-style-type: disc;
+    }
+
+    .zyle-md-li {
+      margin: 4px 0;
+      line-height: 1.5;
+    }
+
+    /* 수평선 */
+    .zyle-md-hr {
+      border: none;
+      border-top: 1px solid ${themeColors.border};
+      margin: 16px 0;
     }
   `;
 }

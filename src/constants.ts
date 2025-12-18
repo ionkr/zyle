@@ -56,6 +56,18 @@ export const STORAGE_KEYS = {
   API_KEY: 'zyle_anthropic_api_key',
   API_KEY_IV: 'zyle_anthropic_api_key_iv',
   MODEL: 'zyle_anthropic_model',
+  AI_PROVIDER: 'zyle_ai_provider',
+  BRIDGE_PORT: 'zyle_bridge_port',
+} as const;
+
+/**
+ * Bridge 관련 상수
+ */
+export const BRIDGE_CONSTANTS = {
+  DEFAULT_PORT: 19960,
+  DEFAULT_HOST: '127.0.0.1',
+  DEFAULT_TIMEOUT: 120000, // 2분
+  COMMAND: 'npx @absmartly/claude-code-bridge --port',
 } as const;
 
 /**
@@ -110,6 +122,28 @@ export const SENSITIVE_PATTERNS = {
   // 마스킹 문자열
   MASK: '[FILTERED]',
 } as const;
+
+/**
+ * AI Provider 설정
+ */
+export const AI_PROVIDERS = [
+  {
+    id: 'anthropic-api',
+    name: 'Anthropic API',
+    description: 'Direct API call (requires API key)',
+    requiresApiKey: true,
+  },
+  {
+    id: 'claude-bridge',
+    name: 'Claude CLI (Bridge App)',
+    description: 'Local Claude CLI via Bridge App',
+    requiresApiKey: false,
+  },
+] as const;
+
+export type AIProvider = (typeof AI_PROVIDERS)[number]['id'];
+
+export const DEFAULT_AI_PROVIDER: AIProvider = 'anthropic-api';
 
 /**
  * AI 모델 설정

@@ -81,6 +81,8 @@ export interface AITranslations {
   };
   settings: {
     title: string;
+    provider: string;
+    providerHint: string;
     apiKey: string;
     apiKeyPlaceholder: string;
     apiKeyHint: string;
@@ -89,6 +91,54 @@ export interface AITranslations {
     deleteKey: string;
     model: string;
     modelHint: string;
+    bridge: {
+      status: string;
+      checking: string;
+      running: string;
+      notRunning: string;
+      claudeCliMissing: string;
+      ready: string;
+      installGuide: string;
+      installBridgeApp: string;
+      installClaudeCli: string;
+      portSettings: {
+        label: string;
+        placeholder: string;
+        testConnection: string;
+        connected: string;
+        disconnected: string;
+        testing: string;
+      };
+      notRunningGuide: {
+        title: string;
+        description: string;
+        command: string;
+        copy: string;
+        copied: string;
+        retry: string;
+        settings: string;
+      };
+      notAuthenticated: {
+        title: string;
+        description: string;
+        command: string;
+        loginCommand: string;
+      };
+      statusMessages: {
+        serverRunning: string;
+        allReady: string;
+      };
+    };
+  };
+  followUp: {
+    placeholder: string;
+    send: string;
+    loading: string;
+  };
+  conversation: {
+    you: string;
+    assistant: string;
+    newConversation: string;
   };
   report: {
     title: string;

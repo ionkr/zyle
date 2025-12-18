@@ -237,5 +237,288 @@ export function getModalStyles(themeColors: ThemeColors, theme: 'light' | 'dark'
       color: ${themeColors.textSecondary};
       line-height: 1.5;
     }
+
+    /* Provider 선택 */
+    .zyle-provider-select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid ${themeColors.border};
+      border-radius: 8px;
+      font-size: 14px;
+      background: ${themeColors.backgroundSecondary};
+      color: ${themeColors.text};
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='${theme === 'dark' ? '%23a0a0a0' : '%23666666'}'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 40px;
+    }
+
+    .zyle-provider-select:focus {
+      outline: none;
+      border-color: ${themeColors.accent};
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .zyle-provider-select:hover {
+      border-color: ${themeColors.accent};
+    }
+
+    .zyle-provider-hint {
+      margin-top: 8px;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: ${themeColors.textSecondary};
+      line-height: 1.5;
+    }
+
+    .zyle-provider-settings {
+      padding-top: 8px;
+      border-top: 1px solid ${themeColors.border};
+      margin-top: 8px;
+    }
+
+    /* Bridge 상태 표시 */
+    .zyle-bridge-status {
+      margin-top: 8px;
+    }
+
+    .zyle-bridge-status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .zyle-bridge-status-indicator.checking {
+      background: ${themeColors.backgroundSecondary};
+      color: ${themeColors.textSecondary};
+    }
+
+    .zyle-bridge-status-indicator.checking .status-icon {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .zyle-bridge-status-indicator.success {
+      background: ${theme === 'dark' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.1)'};
+      color: ${theme === 'dark' ? '#4ade80' : '#16a34a'};
+    }
+
+    .zyle-bridge-status-indicator.warning {
+      background: ${theme === 'dark' ? 'rgba(234, 179, 8, 0.15)' : 'rgba(234, 179, 8, 0.1)'};
+      color: ${theme === 'dark' ? '#facc15' : '#ca8a04'};
+    }
+
+    .zyle-bridge-status-indicator.error {
+      background: ${themeColors.errorBg};
+      color: ${themeColors.error};
+    }
+
+    .zyle-bridge-status-indicator .status-icon {
+      font-size: 16px;
+      display: inline-block;
+    }
+
+    .zyle-bridge-install-guide {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      background: ${themeColors.backgroundSecondary};
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .zyle-bridge-install-guide strong {
+      display: block;
+      margin-bottom: 8px;
+      color: ${themeColors.text};
+    }
+
+    .zyle-bridge-install-guide ol {
+      margin: 0;
+      padding-left: 20px;
+      color: ${themeColors.textSecondary};
+    }
+
+    .zyle-bridge-install-guide li {
+      margin-bottom: 4px;
+    }
+
+    .zyle-bridge-install-guide code {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: ${theme === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)'};
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+      font-size: 11px;
+      word-break: break-all;
+    }
+
+    /* Bridge 명령어 박스 */
+    .zyle-bridge-command-box {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+      margin-top: 6px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: ${theme === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)'};
+      border: 1px solid ${themeColors.border};
+    }
+
+    .zyle-bridge-command-box code {
+      flex: 1;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+      font-size: 12px;
+      color: ${themeColors.text};
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .zyle-copy-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      color: ${themeColors.accent};
+      background: transparent;
+      border: 1px solid ${themeColors.accent};
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .zyle-copy-btn:hover {
+      background: ${themeColors.accent};
+      color: white;
+    }
+
+    .zyle-copy-btn.copied {
+      background: ${theme === 'dark' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.1)'};
+      border-color: ${theme === 'dark' ? '#4ade80' : '#16a34a'};
+      color: ${theme === 'dark' ? '#4ade80' : '#16a34a'};
+    }
+
+    /* Bridge 상태 상세 정보 */
+    .zyle-bridge-status-details {
+      margin-top: 12px;
+    }
+
+    .zyle-command-section {
+      margin-bottom: 12px;
+    }
+
+    .zyle-command-label {
+      font-size: 12px;
+      color: ${themeColors.textSecondary};
+      margin-bottom: 6px;
+    }
+
+    /* Bridge 액션 버튼 그룹 */
+    .zyle-bridge-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .zyle-btn-retry-status {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      background: ${themeColors.backgroundSecondary};
+      color: ${themeColors.text};
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid ${themeColors.border};
+    }
+
+    .zyle-btn-retry-status:hover {
+      background: ${themeColors.backgroundHover};
+    }
+
+    /* 포트 설정 */
+    .zyle-port-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .zyle-port-input {
+      width: 100px;
+      padding: 10px 12px;
+      border: 1px solid ${themeColors.border};
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+      background: ${themeColors.backgroundSecondary};
+      color: ${themeColors.text};
+      text-align: center;
+    }
+
+    .zyle-port-input:focus {
+      outline: none;
+      border-color: ${themeColors.accent};
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .zyle-btn-test-connection {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      background: ${themeColors.backgroundSecondary};
+      color: ${themeColors.text};
+      cursor: pointer;
+      transition: background 0.15s;
+      border: 1px solid ${themeColors.border};
+      white-space: nowrap;
+    }
+
+    .zyle-btn-test-connection:hover {
+      background: ${themeColors.backgroundHover};
+    }
+
+    .zyle-btn-test-connection:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .zyle-connection-status {
+      font-size: 12px;
+      color: ${themeColors.textSecondary};
+      margin-left: 4px;
+    }
+
+    .zyle-connection-status.connected {
+      color: ${theme === 'dark' ? '#4ade80' : '#16a34a'};
+    }
+
+    .zyle-connection-status.testing {
+      color: ${themeColors.warning};
+    }
+
+    .zyle-connection-status.disconnected {
+      color: ${themeColors.error};
+    }
+
+    /* 준비 완료 상태 */
+    .zyle-bridge-ready-message {
+      font-size: 12px;
+      color: ${themeColors.textSecondary};
+      margin-top: 8px;
+    }
   `;
 }

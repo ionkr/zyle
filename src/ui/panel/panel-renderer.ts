@@ -1,5 +1,13 @@
-import type { LogEntry, AnalysisResult, NetworkRequest, AIAnalysisResult, DisplayMode } from '../../types';
+import type {
+  LogEntry,
+  AnalysisResult,
+  NetworkRequest,
+  AIAnalysisResult,
+  DisplayMode,
+  AIAnalysisState,
+} from '../../types';
 import type { TabType } from './types';
+import type { BridgeStatus, ConversationState } from '../../bridge/bridge-client';
 import { formatTimestamp } from '../../utils/helpers';
 import { escapeHtml, escapeHtmlAttr } from '../../utils/sanitizer';
 import { getSparkleIcon } from '../ai-settings-modal';
@@ -76,17 +84,44 @@ export function renderListView(
 }
 
 /**
+ * 상세 뷰 렌더링 옵션
+ */
+export interface DetailViewOptions {
+  log: LogEntry;
+  analysis: AnalysisResult | undefined;
+  aiAnalysisState: AIAnalysisState;
+  aiResult: AIAnalysisResult | undefined;
+  aiError: string | null;
+  networkRequests: NetworkRequest[];
+  // Bridge 관련 옵션
+  isBridgeMode?: boolean;
+  bridgeStatus?: BridgeStatus | null;
+  conversation?: ConversationState | null;
+  bridgePort?: number;
+}
+
+/**
  * 상세 뷰 렌더링
  */
 export function renderDetailView(
   log: LogEntry,
   analysis: AnalysisResult | undefined,
-  aiAnalysisState: string,
+  aiAnalysisState: AIAnalysisState,
   aiResult: AIAnalysisResult | undefined,
   aiError: string | null,
-  networkRequests: NetworkRequest[]
+  networkRequests: NetworkRequest[],
+  bridgeOptions?: {
+    isBridgeMode: boolean;
+    bridgeStatus: BridgeStatus | null;
+    conversation: ConversationState | null;
+    bridgePort: number;
+  }
 ): string {
   const ui = getUITranslations();
+  const isBridgeMode = bridgeOptions?.isBridgeMode ?? false;
+
+  // 로딩 중일 때 오버레이 표시
+  const showLoadingOverlay = aiAnalysisState === 'loading';
 
   return `
     <div class="zyle-panel-header">
@@ -107,8 +142,12 @@ export function renderDetailView(
       </div>
     </div>
     <div class="zyle-panel-content scrollbar-thin" style="position: relative;">
-      ${renderLogDetail(log, analysis, aiResult, aiError, aiAnalysisState, networkRequests)}
-      ${aiAnalysisState === 'loading' ? AIRenderer.renderLoadingOverlay() : ''}
+      ${
+        isBridgeMode
+          ? renderBridgeLogDetail(log, analysis, aiResult, aiError, aiAnalysisState, networkRequests, bridgeOptions!)
+          : renderLogDetail(log, analysis, aiResult, aiError, aiAnalysisState, networkRequests)
+      }
+      ${showLoadingOverlay ? AIRenderer.renderLoadingOverlay() : ''}
     </div>
     ${renderResizeHandles()}
   `;
@@ -241,6 +280,122 @@ function getFilteredLogs(logs: LogEntry[], currentTab: TabType): LogEntry[] {
     default:
       return logs;
   }
+}
+
+/**
+ * Bridge 모드 로그 상세 렌더링
+ */
+function renderBridgeLogDetail(
+  log: LogEntry,
+  analysis: AnalysisResult | undefined,
+  aiResult: AIAnalysisResult | undefined,
+  aiError: string | null,
+  aiAnalysisState: AIAnalysisState,
+  networkRequests: NetworkRequest[],
+  bridgeOptions: {
+    isBridgeMode: boolean;
+    bridgeStatus: BridgeStatus | null;
+    conversation: ConversationState | null;
+    bridgePort: number;
+  }
+): string {
+  const ui = getUITranslations();
+
+  return `
+    <div class="zyle-analysis">
+      <div class="zyle-log-item ${log.level}" style="cursor: default;">
+        <div class="zyle-log-header">
+          <span class="zyle-log-level ${log.level}">${log.level}</span>
+          <span class="zyle-log-time">${formatTimestamp(log.timestamp)}</span>
+        </div>
+        <div class="zyle-log-message" style="max-height: none;">${escapeHtml(log.message)}</div>
+      </div>
+
+      ${
+        analysis?.errorType
+          ? `
+        <div class="zyle-error-type-card ${analysis.severity}">
+          <div class="zyle-error-type-icon">
+            ${LogRenderer.getSeverityIcon(analysis.severity)}
+          </div>
+          <div class="zyle-error-type-content">
+            <span class="zyle-error-type-label">${analysis.errorType}</span>
+            <span class="zyle-error-type-severity">${LogRenderer.getSeverityLabel(analysis.severity)}</span>
+          </div>
+        </div>
+      `
+          : ''
+      }
+
+      ${AIRenderer.renderBridgeAISection(
+        aiAnalysisState,
+        bridgeOptions.bridgeStatus,
+        bridgeOptions.conversation,
+        aiResult,
+        aiError,
+        log,
+        networkRequests,
+        bridgeOptions.bridgePort
+      )}
+
+      ${
+        analysis?.codeContext?.sourcePreview && analysis.codeContext.sourcePreview.length > 0
+          ? `
+        <div class="zyle-analysis-section">
+          <div class="zyle-analysis-title">
+            ${codeIcon(16)}
+            ${ui.analysis.sourceCode} (${escapeHtml(analysis.codeContext.fileName)}:${analysis.codeContext.lineNumber})
+          </div>
+          <div class="zyle-code-preview">
+            ${LogRenderer.renderCodePreview(analysis.codeContext.sourcePreview, analysis.codeContext.lineNumber)}
+          </div>
+        </div>
+      `
+          : ''
+      }
+
+      ${
+        analysis?.relatedNetworkRequests && analysis.relatedNetworkRequests.length > 0
+          ? `
+        <div class="zyle-analysis-section">
+          <div class="zyle-analysis-title">
+            ${globeIcon(16)}
+            ${ui.analysis.relatedNetwork}
+          </div>
+          ${analysis.relatedNetworkRequests.map((req) => NetworkRenderer.renderNetworkItem(req)).join('')}
+        </div>
+      `
+          : ''
+      }
+
+      ${
+        log.stackTrace.length > 0
+          ? `
+        <div class="zyle-analysis-section">
+          <div class="zyle-analysis-title">
+            ${listIcon(16)}
+            ${ui.analysis.stackTrace}
+          </div>
+          <div class="zyle-code-preview">
+            ${log.stackTrace
+              .map((frame) => {
+                const location = frame.original
+                  ? `${frame.original.fileName}:${frame.original.lineNumber}:${frame.original.columnNumber}`
+                  : `${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`;
+                return `<div class="zyle-code-line">
+                <span style="color: var(--text-secondary);">at</span>
+                <span>${frame.functionName}</span>
+                <span style="opacity: 0.7;">(${location})</span>
+              </div>`;
+              })
+              .join('')}
+          </div>
+        </div>
+      `
+          : ''
+      }
+    </div>
+  `;
 }
 
 /**

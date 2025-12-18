@@ -210,3 +210,31 @@ export interface AIAnalysisContext {
     sourcePreview: string[];
   };
 }
+
+/**
+ * 대화 메시지 (Bridge 클라이언트용)
+ */
+export interface ConversationMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+}
+
+/**
+ * 대화 상태 (Bridge 클라이언트용)
+ */
+export interface ConversationState {
+  id: string;
+  logId: string;
+  messages: ConversationMessage[];
+}
+
+/**
+ * Bridge 상태 정보
+ */
+export interface BridgeStatus {
+  available: boolean;
+  version?: string;
+  authenticated?: boolean;
+  error?: string;
+}

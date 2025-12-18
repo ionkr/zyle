@@ -1,5 +1,6 @@
-import type { LogEntry, AIAnalysisResult, NetworkRequest } from '../../types';
+import type { LogEntry, AIAnalysisResult, NetworkRequest, ConversationState, BridgeStatus, AIAnalysisState } from '../../types';
 import { escapeHtml, escapeHtmlAttr } from '../../utils/sanitizer';
+import { parseMarkdown } from '../../utils/markdown-parser';
 import {
   copyIcon,
   checkIcon,
@@ -11,107 +12,126 @@ import {
   dotIcon, sparkleIcon,
 } from '../../icons';
 import { getAITranslations, getUITranslations } from '../../i18n';
+import { BRIDGE_CONSTANTS } from '../../constants';
 
 /**
  * AI 분석 결과 렌더링 (비개발자 친화적)
  */
 export function renderAIAnalysisResult(result: AIAnalysisResult, log?: LogEntry, networkRequests: NetworkRequest[] = []): string {
+  return `
+    <div class="zyle-ai-result">
+      ${renderAISummaryCard(result, log, networkRequests)}
+      ${renderAIDetailedAnalysis(result)}
+    </div>
+  `;
+}
+
+/**
+ * AI 요약 카드 렌더링 (핵심 분석 결과 + 개발자에게 전달하기)
+ */
+export function renderAISummaryCard(result: AIAnalysisResult, log?: LogEntry, networkRequests: NetworkRequest[] = []): string {
   const ai = getAITranslations();
   const ui = getUITranslations();
   const copyText = generateCopyText(result, log, networkRequests);
 
   return `
-    <div class="zyle-ai-result">
-      <!-- 비개발자용 요약 카드 -->
-      <div class="zyle-ai-summary-card">
-        <div class="zyle-ai-summary-header">
-          <span class="zyle-ai-summary-title">
-            ${sparkleIcon()}
-            ${ai.analyzed}
-          </span>
-        </div>
-        <div class="zyle-ai-summary-content">
-          ${escapeHtml(result.rootCause)}
-        </div>
+    <div class="zyle-ai-summary-card">
+      <div class="zyle-ai-summary-header">
+        <span class="zyle-ai-summary-title">
+          ${sparkleIcon()}
+          ${ai.analyzed}
+        </span>
+      </div>
+      <div class="zyle-ai-summary-content">
+        ${escapeHtml(result.rootCause)}
+      </div>
 
-        <!-- 개발자에게 전달하기 섹션 -->
-        <div class="zyle-ai-copy-section">
-          <div class="zyle-ai-copy-header">
-            <span class="zyle-ai-copy-label">
-              ${copyIcon(14)}
-              ${ai.copyForDeveloper}
-            </span>
-            <button class="zyle-ai-copy-btn" data-action="copy-report" data-copy-text="${escapeHtmlAttr(copyText)}">
-              ${copyIcon(14)}
-              ${ui.buttons.copy}
+      <!-- 개발자에게 전달하기 섹션 -->
+      <div class="zyle-ai-copy-section">
+        <div class="zyle-ai-copy-header">
+          <span class="zyle-ai-copy-label">
+            ${copyIcon(14)}
+            ${ai.copyForDeveloper}
+          </span>
+          <button class="zyle-ai-copy-btn" data-action="copy-report" data-copy-text="${escapeHtmlAttr(copyText)}">
+            ${copyIcon(14)}
+            ${ui.buttons.copy}
+          </button>
+        </div>
+        <div class="zyle-ai-copy-content">${escapeHtml(copyText)}</div>
+      </div>
+
+      <div class="zyle-ai-action-hint">
+        ${infoIcon()}
+        <span>${ai.copyHint}</span>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * AI 상세 분석 결과 렌더링
+ */
+export function renderAIDetailedAnalysis(result: AIAnalysisResult): string {
+  const ai = getAITranslations();
+  const ui = getUITranslations();
+
+  return `
+    <div class="zyle-analysis-section">
+      <div class="zyle-ai-header">
+        <span class="zyle-ai-badge">
+          ${sparkleIcon()}
+          ${ai.detailedAnalysis}
+        </span>
+      </div>
+
+      ${result.possibleCauses.length > 0 ? `
+        <div class="zyle-collapsible-list" data-list-type="causes">
+          <div class="zyle-analysis-title" style="margin-top: 12px;">
+            ${questionIcon(16)}
+            ${ai.possibleCauses}
+          </div>
+          <ul class="zyle-analysis-list">
+            ${result.possibleCauses.map((cause) => `<li>${escapeHtml(cause)}</li>`).join('')}
+          </ul>
+          ${result.possibleCauses.length > 3 ? `
+            <button class="zyle-toggle-btn" data-action="toggle-list">
+              <span class="zyle-toggle-text">${ui.buttons.showMore}</span>
+              <span class="zyle-toggle-count">(+${result.possibleCauses.length - 3})</span>
+              ${chevronDownIcon()}
             </button>
-          </div>
-          <div class="zyle-ai-copy-content">${escapeHtml(copyText)}</div>
+          ` : ''}
         </div>
+      ` : ''}
 
-        <div class="zyle-ai-action-hint">
-          ${infoIcon()}
-          <span>${ai.copyHint}</span>
-        </div>
-      </div>
-
-      <!-- 상세 분석 결과 (접을 수 있음) -->
-      <div class="zyle-analysis-section">
-        <div class="zyle-ai-header">
-          <span class="zyle-ai-badge">
-            ${sparkleIcon()}
-            ${ai.detailedAnalysis}
-          </span>
-        </div>
-
-        ${result.possibleCauses.length > 0 ? `
-          <div class="zyle-collapsible-list" data-list-type="causes">
-            <div class="zyle-analysis-title" style="margin-top: 12px;">
-              ${questionIcon(16)}
-              ${ai.possibleCauses}
-            </div>
-            <ul class="zyle-analysis-list">
-              ${result.possibleCauses.map((cause) => `<li>${escapeHtml(cause)}</li>`).join('')}
-            </ul>
-            ${result.possibleCauses.length > 3 ? `
-              <button class="zyle-toggle-btn" data-action="toggle-list">
-                <span class="zyle-toggle-text">${ui.buttons.showMore}</span>
-                <span class="zyle-toggle-count">(+${result.possibleCauses.length - 3})</span>
-                ${chevronDownIcon()}
-              </button>
-            ` : ''}
-          </div>
-        ` : ''}
-
-        ${result.suggestions.length > 0 ? `
-          <div class="zyle-collapsible-list" data-list-type="suggestions">
-            <div class="zyle-analysis-title" style="margin-top: 16px;">
-              ${lightbulbIcon(16)}
-              ${ai.solutions}
-            </div>
-            <ul class="zyle-analysis-list">
-              ${result.suggestions.map((suggestion) => `<li>${escapeHtml(suggestion)}</li>`).join('')}
-            </ul>
-            ${result.suggestions.length > 3 ? `
-              <button class="zyle-toggle-btn" data-action="toggle-list">
-                <span class="zyle-toggle-text">${ui.buttons.showMore}</span>
-                <span class="zyle-toggle-count">(+${result.suggestions.length - 3})</span>
-                ${chevronDownIcon()}
-              </button>
-            ` : ''}
-          </div>
-        ` : ''}
-
-        ${result.codeExample ? `
+      ${result.suggestions.length > 0 ? `
+        <div class="zyle-collapsible-list" data-list-type="suggestions">
           <div class="zyle-analysis-title" style="margin-top: 16px;">
-            ${codeIcon(16)}
-            ${ai.codeExample}
+            ${lightbulbIcon(16)}
+            ${ai.solutions}
           </div>
-          <div class="zyle-code-preview">
-            <pre style="margin: 0; white-space: pre-wrap; word-break: break-word;">${escapeHtml(result.codeExample)}</pre>
-          </div>
-        ` : ''}
-      </div>
+          <ul class="zyle-analysis-list">
+            ${result.suggestions.map((suggestion) => `<li>${escapeHtml(suggestion)}</li>`).join('')}
+          </ul>
+          ${result.suggestions.length > 3 ? `
+            <button class="zyle-toggle-btn" data-action="toggle-list">
+              <span class="zyle-toggle-text">${ui.buttons.showMore}</span>
+              <span class="zyle-toggle-count">(+${result.suggestions.length - 3})</span>
+              ${chevronDownIcon()}
+            </button>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      ${result.codeExample ? `
+        <div class="zyle-analysis-title" style="margin-top: 16px;">
+          ${codeIcon(16)}
+          ${ai.codeExample}
+        </div>
+        <div class="zyle-code-preview">
+          <pre style="margin: 0; white-space: pre-wrap; word-break: break-word;">${escapeHtml(result.codeExample)}</pre>
+        </div>
+      ` : ''}
     </div>
   `;
 }
@@ -300,4 +320,213 @@ export function renderAIError(error: string, defaultAnalysisHtml: string): strin
     </div>
     ${defaultAnalysisHtml}
   `;
+}
+
+// ============================================
+// Bridge 전용 렌더링 함수
+// ============================================
+
+/**
+ * Bridge 서버 미실행 안내 UI
+ */
+export function renderBridgeNotRunning(port: number = BRIDGE_CONSTANTS.DEFAULT_PORT): string {
+  const ai = getAITranslations();
+  const bridge = ai.settings.bridge.notRunningGuide;
+  const command = `${BRIDGE_CONSTANTS.COMMAND} ${port}`;
+
+  return `
+    <div class="zyle-bridge-notice">
+      <div class="zyle-bridge-notice-icon">&#x26A0;&#xFE0F;</div>
+      <div class="zyle-bridge-notice-title">${bridge.title}</div>
+      <div class="zyle-bridge-notice-desc">${bridge.description}</div>
+      <div class="zyle-bridge-notice-label">${bridge.command}</div>
+      <div class="zyle-bridge-command-box">
+        <code>${escapeHtml(command)}</code>
+        <button
+          class="zyle-copy-btn"
+          data-action="copy-command"
+          data-command="${escapeHtmlAttr(command)}"
+        >
+          ${bridge.copy}
+        </button>
+      </div>
+      <div class="zyle-bridge-notice-actions">
+        <button data-action="bridge-retry" class="zyle-btn-primary">${bridge.retry}</button>
+        <button data-action="ai-settings" class="zyle-btn-secondary">${bridge.settings}</button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Claude CLI 인증 안됨 안내 UI
+ */
+export function renderBridgeNotAuthenticated(): string {
+  const ai = getAITranslations();
+  const auth = ai.settings.bridge.notAuthenticated;
+
+  return `
+    <div class="zyle-bridge-notice">
+      <div class="zyle-bridge-notice-icon">&#x1F511;</div>
+      <div class="zyle-bridge-notice-title">${auth.title}</div>
+      <div class="zyle-bridge-notice-desc">${auth.description}</div>
+      <div class="zyle-bridge-notice-label">${auth.command}</div>
+      <div class="zyle-bridge-command-box">
+        <code>${escapeHtml(auth.loginCommand)}</code>
+        <button
+          class="zyle-copy-btn"
+          data-action="copy-command"
+          data-command="${escapeHtmlAttr(auth.loginCommand)}"
+        >
+          ${ai.settings.bridge.notRunningGuide.copy}
+        </button>
+      </div>
+      <div class="zyle-bridge-notice-actions">
+        <button data-action="bridge-retry" class="zyle-btn-primary">${ai.settings.bridge.notRunningGuide.retry}</button>
+        <button data-action="ai-settings" class="zyle-btn-secondary">${ai.settings.bridge.notRunningGuide.settings}</button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * 대화 기록 렌더링
+ */
+export function renderConversation(
+  conversation: ConversationState | null
+): string {
+  if (!conversation || conversation.messages.length === 0) {
+    return '';
+  }
+
+  const ai = getAITranslations();
+
+  let html = '<div class="zyle-conversation">';
+
+  for (const msg of conversation.messages) {
+    const isUser = msg.role === 'user';
+    const label = isUser ? ai.conversation.you : ai.conversation.assistant;
+    const icon = isUser ? '&#x1F464;' : '&#x1F916;';
+
+    // user 메시지는 escapeHtml, assistant 메시지는 마크다운 파싱
+    const content = isUser ? escapeHtml(msg.content) : parseMarkdown(msg.content);
+    const contentClass = isUser ? 'zyle-message-content' : 'zyle-message-content zyle-md-content';
+
+    html += `
+      <div class="zyle-message ${isUser ? 'user' : 'assistant'}">
+        <div class="zyle-message-header">
+          <span class="zyle-message-icon">${icon}</span>
+          <span class="zyle-message-label">${label}</span>
+        </div>
+        <div class="${contentClass}">${content}</div>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  return html;
+}
+
+/**
+ * 추가 질문 입력창 렌더링
+ */
+export function renderFollowUpInput(aiState: AIAnalysisState): string {
+  const ai = getAITranslations();
+  const isLoading = aiState === 'loading';
+
+  return `
+    <div class="zyle-followup-input">
+      <input
+        type="text"
+        class="zyle-followup-text"
+        placeholder="${ai.followUp.placeholder}"
+        ${isLoading ? 'disabled' : ''}
+        data-input="followup"
+      />
+      <button
+        class="zyle-followup-send"
+        data-action="send-followup"
+        ${isLoading ? 'disabled' : ''}
+      >
+        ${isLoading ? ai.followUp.loading : ai.followUp.send}
+      </button>
+    </div>
+  `;
+}
+
+/**
+ * Bridge 전용 AI 섹션 렌더링
+ */
+export function renderBridgeAISection(
+  aiState: AIAnalysisState,
+  bridgeStatus: BridgeStatus | null,
+  conversation: ConversationState | null,
+  aiResult: AIAnalysisResult | undefined,
+  aiError: string | null,
+  log?: LogEntry,
+  networkRequests: NetworkRequest[] = [],
+  port: number = BRIDGE_CONSTANTS.DEFAULT_PORT
+): string {
+  // 서버 미실행 시
+  if (bridgeStatus && !bridgeStatus.available) {
+    return renderBridgeNotRunning(port);
+  }
+
+  // 인증 안됨
+  if (bridgeStatus && bridgeStatus.available && !bridgeStatus.authenticated) {
+    return renderBridgeNotAuthenticated();
+  }
+
+  // 에러
+  if (aiState === 'error' && aiError) {
+    return `
+      <div class="zyle-ai-error">
+        <div class="zyle-ai-error-content">
+          <strong>${getAITranslations().error.title}</strong>
+          <p>${escapeHtml(aiError)}</p>
+          <div class="zyle-ai-error-actions">
+            <button class="zyle-btn-retry" data-action="ai-retry">${getAITranslations().error.retry}</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // 대화나 결과가 없으면 빈 문자열 반환 (분석 전 상태)
+  const hasConversation = conversation && conversation.messages.length > 0;
+  const hasResult = aiResult !== undefined;
+
+  if (!hasConversation && !hasResult && aiState === 'idle') {
+    return '';
+  }
+
+  // 대화 UI
+  let html = '<div class="zyle-bridge-ai-section">';
+
+  // AI 분석 결과 - 요약 카드
+  if (aiState === 'success' && aiResult) {
+    html += renderAISummaryCard(aiResult, log, networkRequests);
+  }
+
+  // 대화 기록 (첫 번째 분석 프롬프트 제외하고 추가 질문만 표시)
+  if (hasConversation && conversation!.messages.length > 2) {
+    // 첫 번째 질문/답변은 AI 분석 결과로 표시되므로, 그 이후의 대화만 표시
+    const followUpMessages = conversation!.messages.slice(2);
+    if (followUpMessages.length > 0) {
+      html += renderConversation({ ...conversation!, messages: followUpMessages });
+    }
+  }
+
+  // 추가 질문 입력창 (요약 카드 바로 밑)
+  if (aiState === 'success' && hasResult) {
+    html += renderFollowUpInput(aiState);
+  }
+
+  // AI 분석 결과 - 상세 분석
+  if (aiState === 'success' && aiResult) {
+    html += renderAIDetailedAnalysis(aiResult);
+  }
+
+  html += '</div>';
+  return html;
 }
