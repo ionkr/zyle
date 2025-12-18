@@ -1,6 +1,6 @@
 {
   "name": "zyle",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A zero-dependency library that embeds into web frontends to capture and analyze console logs with AI-powered insights",
   "type": "module",
   "main": "./dist/zyle.umd.js",
